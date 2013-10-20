@@ -3,17 +3,25 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
-    <script
-      src="http://api.simile-widgets.org/timeline/2.3.1/timeline-api.js?bundle=true"
-      type="text/javascript">
-      // TODO: download this file.
+    <script>
+      custom_url =
+      "file://localhost/Users/mburman/GoogleDrive2.0/Google%20Drive/Classes/15-498/MacForensics/";
+      Timeline_ajax_url=custom_url + "js/timeline_2.3.0/timeline_ajax/simile-ajax-api.js";
+      Timeline_urlPrefix=custom_url + "js/timeline_2.3.0/timeline_js/";
+      Timeline_parameters='bundle=true';
+
+      // Load initial script.
+      timeline_src=custom_url + "js/timeline_2.3.0/timeline_js/timeline-api.js?bundle=true";
+      element = document.createElement('script');
+      element.src = timeline_src;
+      document.getElementsByTagName('head')[0].appendChild(element);
     </script>
 
     <script>
       var tl;
       function onLoad() {
         var theme = Timeline.ClassicTheme.create();
-        theme.event.bubble.width = 350;  
+        theme.event.bubble.width = 350;
         theme.event.bubble.height = 300;
         theme.event.track.height = 15;
         theme.event.tape.height = 8;
@@ -23,8 +31,8 @@
         Timeline.createBandInfo({
           eventSource:    eventSource,
           date:           "Jun 28 2011 00:00:00 GMT",
-          width:          "70%", 
-          intervalUnit:   Timeline.DateTime.MONTH, 
+          width:          "70%",
+          intervalUnit:   Timeline.DateTime.MONTH,
           intervalPixels: 300,
           theme: theme,
           layout: 'original'
@@ -32,8 +40,8 @@
         Timeline.createBandInfo({
           eventSource:    eventSource,
           date:           "Jun 28 2011 00:00:00 GMT",
-          width:          "30%", 
-          intervalUnit:   Timeline.DateTime.YEAR, 
+          width:          "30%",
+          intervalUnit:   Timeline.DateTime.YEAR,
           intervalPixels: 300,
           overview: true,
           theme: theme,
@@ -45,7 +53,7 @@
 
         tl = Timeline.create(document.getElementById("my-timeline"), bandInfos);
         Timeline.loadJSON("json_file.json", function(json, url) {
-          eventSource.loadJSON(json, url); 
+          eventSource.loadJSON(json, url);
         });
       }
 

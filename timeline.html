@@ -6,26 +6,38 @@
     <script
       src="http://api.simile-widgets.org/timeline/2.3.1/timeline-api.js?bundle=true"
       type="text/javascript">
+      // TODO: download this file.
     </script>
 
     <script>
       var tl;
       function onLoad() {
+        var theme = Timeline.ClassicTheme.create();
+        theme.event.bubble.width = 350;  
+        theme.event.bubble.height = 300;
+        theme.event.track.height = 15;
+        theme.event.tape.height = 8;
+
         var eventSource = new Timeline.DefaultEventSource();
         var bandInfos = [
         Timeline.createBandInfo({
           eventSource:    eventSource,
-          date:           "Jun 28 2006 00:00:00 GMT",
+          date:           "Jun 28 2011 00:00:00 GMT",
           width:          "70%", 
           intervalUnit:   Timeline.DateTime.MONTH, 
-          intervalPixels: 100
+          intervalPixels: 300,
+          theme: theme,
+          layout: 'original'
         }),
         Timeline.createBandInfo({
           eventSource:    eventSource,
-          date:           "Jun 28 2006 00:00:00 GMT",
+          date:           "Jun 28 2011 00:00:00 GMT",
           width:          "30%", 
           intervalUnit:   Timeline.DateTime.YEAR, 
-          intervalPixels: 200
+          intervalPixels: 300,
+          overview: true,
+          theme: theme,
+          layout: 'original'
         })
         ];
         bandInfos[1].syncWith = 0;

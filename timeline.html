@@ -4,14 +4,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
     <script>
-      custom_url =
-      "file://localhost/Users/mburman/GoogleDrive2.0/Google%20Drive/Classes/15-498/MacForensics/";
-      Timeline_ajax_url=custom_url + "js/timeline_2.3.0/timeline_ajax/simile-ajax-api.js";
-      Timeline_urlPrefix=custom_url + "js/timeline_2.3.0/timeline_js/";
+      localhost = "http://localhost:8000/";
+      Timeline_ajax_url=localhost + "js/timeline_2.3.0/timeline_ajax/simile-ajax-api.js";
+      Timeline_urlPrefix=localhost + "js/timeline_2.3.0/timeline_js/";
       Timeline_parameters='bundle=true';
 
       // Load initial script.
-      timeline_src=custom_url + "js/timeline_2.3.0/timeline_js/timeline-api.js?bundle=true";
+      timeline_src=localhost + "js/timeline_2.3.0/timeline_js/timeline-api.js?bundle=true";
       element = document.createElement('script');
       element.src = timeline_src;
       document.getElementsByTagName('head')[0].appendChild(element);

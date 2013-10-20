@@ -1,6 +1,10 @@
 LOG_FILE="serverlog"
 PORT=8000
 
+echo "Parsing plist files."
+mkdir gen
+python plist_parser.py /Library/Receipts/InstallHistory.plist > gen/json_file.json
+
 echo "Starting local server...."
 
 python -m SimpleHTTPServer $PORT &> $LOG_FILE &

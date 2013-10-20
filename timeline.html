@@ -51,7 +51,7 @@
         bandInfos[1].highlight = true;
 
         tl = Timeline.create(document.getElementById("my-timeline"), bandInfos);
-        Timeline.loadJSON("json_file.json", function(json, url) {
+        Timeline.loadJSON("gen/json_file.json", function(json, url) {
           eventSource.loadJSON(json, url);
         });
       }

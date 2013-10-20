@@ -2,17 +2,14 @@ LOG_FILE="serverlog"
 PORT=8000
 
 echo "Parsing plist files."
-mkdir gen
+mkdir -p gen
 python plist_parser.py /Library/Receipts/InstallHistory.plist > gen/json_file.json
 
-echo "Starting local server...."
+echo "Killing old server instances..."
+ps -ef | grep "SimpleHTTPServer" | awk '{print $2}' | xargs kill 2>/dev/null
 
-python -m SimpleHTTPServer $PORT &> $LOG_FILE &
+echo "Starting new local server...."
+python -m SimpleHTTPServer $PORT &> serverlog &
 
-if [ $? -eq 0 ];
-then
-  echo "Started server on port $PORT"
-  echo "View the timeline at http://localhost:8000/timeline.html"
-else
-  echo "Failed to start server. Something else is using port $PORT. Kill it and try again."
-fi
+echo "Started server on port $PORT"
+echo "View the timeline at http://localhost:8000/timeline.html"

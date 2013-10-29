@@ -33,6 +33,18 @@
       var monthNames = [ "January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December" ];
 
+      function getEventsInYearAndMonth(events, year, month) {
+        var toReturn = Array();
+        for (var i = 0; i < events.length; i++) {
+          if (events[i].start.getFullYear() == year &&
+              events[i].start.getMonth() == month) {
+                toReturn.push(events[i]);
+          }
+        }
+        return toReturn;
+
+      }
+
       // Draw the timeline.
       function drawTimeline(events) {
         console.log("Number of events: " + events.length);
@@ -73,7 +85,7 @@
         path.moveTo(start);
         path.lineTo(start.add([ 0, timeline_length - itemPixels ]));
 
-        // Draw month names
+        // Draw month names.
         for (var i=0; i < numMonths; i++) {
           var monthNumber = ((startMonth -1) + i) % 12;
           var yearNumber = startYear + Math.floor(((startMonth - 1) + i) / 12);
@@ -82,6 +94,11 @@
           text.justification = 'right';
           text.fillColor = 'black';
           text.content = monthNames[monthNumber] + " " + yearNumber;
+          text.events = getEventsInYearAndMonth(events, yearNumber, monthNumber);
+
+          text.onMouseDown = function(event) {
+            // TODO: Display text.events in a nice popup.. or something.
+          }
 
           var circle = new paper.Path.Circle(new paper.Point(timeline_width / 2, i * itemPixels + start_offset), 2);
           circle.fillColor = 'black';

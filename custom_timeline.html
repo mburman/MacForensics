@@ -11,6 +11,8 @@
         events = parseJSON("http://localhost:8000/gen/json_file_custom.json");
       });
 
+      // TODO:Refactor heavily.
+
       // Parse a JSON file and return a list of events.
       function parseJSON(json_file) {
         var events = new Array();
@@ -28,16 +30,12 @@
         });
       }
 
+      var monthNames = [ "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December" ];
+
       // Draw the timeline.
       function drawTimeline(events) {
         console.log("Number of events: " + events.length);
-        var timeline_length = 5000;
-
-        // Adjust canvas.
-        var canvas = document.getElementById("myCanvas");
-        canvas.height = timeline_length;
-        canvas.width = 1000;
-
         // Sort in ascending order.
         events = events.sort(
           function(a,b) {
@@ -45,14 +43,68 @@
           }
         );
 
-        var canvas = document.getElementById('myCanvas');
+        var startYear = events[0].start.getFullYear();
+        var endYear = events[events.length - 1].start.getFullYear();
+        // From 1 - 12.
+        var startMonth = events[0].start.getMonth() + 1;
+        var endMonth = events[events.length - 1].start.getMonth() + 1;
+        var numMonths = endMonth + (13 - startMonth) + (endYear - startYear) * 12 - 12;
+        console.log(numMonths);
+
+        // Give each month n pixels.
+        var itemPixels = 40;
+
+        // Offset from the top of the canvas to the start of the timeline.
+        var start_offset = 50;
+        // Offset from the bottom of the canvas to the end of the timeline.
+        var end_offset = 50;
+        var timeline_length = itemPixels * numMonths;
+        var timeline_width = 1200;
+
+        // Adjust canvas to appropriate size.
+        var canvas = document.getElementById("myCanvas");
+        canvas.height = timeline_length + start_offset + end_offset;
+        canvas.width = timeline_width;
+
         paper.setup(canvas);
         var path = new paper.Path();
         path.strokeColor = 'black';
-        var start = new paper.Point(600, 0);
+        var start = new paper.Point(timeline_width / 2, start_offset);
         path.moveTo(start);
-        path.lineTo(start.add([ 0, timeline_length ]));
+        path.lineTo(start.add([ 0, timeline_length - itemPixels ]));
 
+        // Draw month names
+        for (var i=0; i < numMonths; i++) {
+          var monthNumber = ((startMonth -1) + i) % 12;
+          var yearNumber = startYear + Math.floor(((startMonth - 1) + i) / 12);
+
+          var text = new paper.PointText(new paper.Point(timeline_width / 2 - 20, i * itemPixels + start_offset));
+          text.justification = 'right';
+          text.fillColor = 'black';
+          text.content = monthNames[monthNumber] + " " + yearNumber;
+
+          var circle = new paper.Path.Circle(new paper.Point(timeline_width / 2, i * itemPixels + start_offset), 2);
+          circle.fillColor = 'black';
+        }
+
+        for (var i = 0; i < events.length; i++) {
+          // Need to figure out which month it falls in.
+          eventMonth = events[i].start.getMonth() + 1;
+          eventYear = events[i].start.getFullYear();
+          index = eventMonth + (13 - startMonth) + (eventYear - startYear) * 12 - 12;
+          // Since index starts from 0.
+          index--;
+
+          var title = new paper.PointText(new paper.Point(timeline_width / 2 + 20, index * itemPixels + start_offset));
+          title.justification = 'left';
+          title.fillColor = 'black';
+          title.content = events[i].title;
+
+          var myCircle = new paper.Path.Circle(new paper.Point(timeline_width / 2, index * itemPixels + start_offset), 5);
+          myCircle.fillColor = 'black';
+        }
+
+        /*
         date_range = events[events.length - 1].start.getTime() - events[0].start.getTime();
         length_to_date_ratio = timeline_length / date_range;
         for (var i=0; i < events.length; i++) {
@@ -68,7 +120,7 @@
           title.fillColor = 'black';
           title.content = events[i].title;
         }
-
+        */
         paper.view.draw();
       }
 

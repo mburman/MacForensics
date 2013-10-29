@@ -1,0 +1,84 @@
+<html>
+  <head>
+    <script
+      src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"
+      type="text/javascript">
+    </script>
+    <script type="text/javascript" src="js/paper.js"></script>
+
+    <script type="text/javascript">
+      $(document).ready(function () {
+        events = parseJSON("http://localhost:8000/gen/json_file_custom.json");
+      });
+
+      // Parse a JSON file and return a list of events.
+      function parseJSON(json_file) {
+        var events = new Array();
+
+        // This is asynchonous.
+        var jqxhr = $.getJSON(json_file, function (json) {
+          $.each(json.events, function (index, item) {
+            event = new Event(item.title, item.description, item.start);
+            events.push(event);
+        });
+        });
+
+        jqxhr.always(function() {
+          drawTimeline(events);
+        });
+      }
+
+//totaldist/totaltimestamp * timestamp
+
+
+      // Draw the timeline.
+      function drawTimeline(events) {
+        console.log("Number of events: " + events.length);
+        var timeline_length = 1000;
+
+        // Find the date ranges of events.
+        var min_date;
+        var max_date;
+        for (var i=0; i < events.length; i++) {
+          events[i].start = new Date(events[i].start);
+          if (i == 0) {
+            min_date = events[i].start.getTime();
+            max_date = min_date;
+          } else {
+            unix_time = events[i].start.getTime();
+            if (unix_time < min_date) {
+              min_date = unix_time;
+            } else if (unix_time > max_date) {
+              max_date = unix_time;
+            }
+          }
+        }
+
+        console.log("Earliest event: " + min_date);
+        console.log("Latest event: " + max_date);
+
+        var canvas = document.getElementById('myCanvas');
+        paper.setup(canvas);
+        var path = new paper.Path();
+        path.strokeColor = 'black';
+        var start = new paper.Point(600, 0);
+        path.moveTo(start);
+        path.lineTo(start.add([ 0, timeline_length ]));
+        paper.view.draw();
+      }
+
+      // A timeline event.
+      function Event(title, description, start) {
+        this.title = title;
+        this.description = description;
+        this.start = start;
+      }
+
+    </script>
+
+  </head>
+
+  <body>
+    <canvas id="myCanvas" resize></canvas>
+  </body>
+</html>

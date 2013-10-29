@@ -1,5 +1,6 @@
 # Project specifics
 serverlog
+gen
 
 *.py[cod]
 

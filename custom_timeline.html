@@ -34,7 +34,7 @@
       // Draw the timeline.
       function drawTimeline(events) {
         console.log("Number of events: " + events.length);
-        var timeline_length = 1000;
+        var timeline_length = 2000;
 
         // Find the date ranges of events.
         var min_date;
@@ -64,6 +64,18 @@
         var start = new paper.Point(600, 0);
         path.moveTo(start);
         path.lineTo(start.add([ 0, timeline_length ]));
+
+        date_range = max_date - min_date;
+        length_to_date_ratio = timeline_length / date_range;
+        for (var i=0; i < events.length; i++) {
+          modified_date = events[i].start.getTime() - min_date;
+          timeline_center = modified_date * length_to_date_ratio;
+          console.log(timeline_center);
+
+          var myCircle = new paper.Path.Circle(new paper.Point(600, timeline_center), 5);
+          myCircle.fillColor = 'black';
+        }
+
         paper.view.draw();
       }
 

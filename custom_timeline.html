@@ -38,26 +38,12 @@
         canvas.height = timeline_length;
         canvas.width = 1000;
 
-        // Find the date ranges of events.
-        var min_date;
-        var max_date;
-        for (var i=0; i < events.length; i++) {
-          events[i].start = new Date(events[i].start);
-          if (i == 0) {
-            min_date = events[i].start.getTime();
-            max_date = min_date;
-          } else {
-            unix_time = events[i].start.getTime();
-            if (unix_time < min_date) {
-              min_date = unix_time;
-            } else if (unix_time > max_date) {
-              max_date = unix_time;
-            }
+        // Sort in ascending order.
+        events = events.sort(
+          function(a,b) {
+            return parseFloat(a.start.getTime()) - parseFloat(b.start.getTime())
           }
-        }
-
-        console.log("Earliest event: " + min_date);
-        console.log("Latest event: " + max_date);
+        );
 
         var canvas = document.getElementById('myCanvas');
         paper.setup(canvas);
@@ -67,10 +53,10 @@
         path.moveTo(start);
         path.lineTo(start.add([ 0, timeline_length ]));
 
-        date_range = max_date - min_date;
+        date_range = events[events.length - 1].start.getTime() - events[0].start.getTime();
         length_to_date_ratio = timeline_length / date_range;
         for (var i=0; i < events.length; i++) {
-          modified_date = events[i].start.getTime() - min_date;
+          modified_date = events[i].start.getTime() - events[0].start.getTime();
           timeline_center = modified_date * length_to_date_ratio;
           console.log(timeline_center);
 
@@ -90,7 +76,7 @@
       function Event(title, description, start) {
         this.title = title;
         this.description = description;
-        this.start = start;
+        this.start = new Date(start);
       }
 
     </script>

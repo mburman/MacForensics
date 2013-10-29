@@ -31,7 +31,7 @@
       // Draw the timeline.
       function drawTimeline(events) {
         console.log("Number of events: " + events.length);
-        var timeline_length = 3000;
+        var timeline_length = 5000;
 
         // Adjust canvas.
         var canvas = document.getElementById("myCanvas");
@@ -76,6 +76,11 @@
 
           var myCircle = new paper.Path.Circle(new paper.Point(600, timeline_center), 5);
           myCircle.fillColor = 'black';
+
+          var title = new paper.PointText(new paper.Point(620, timeline_center));
+          title.justification = 'left';
+          title.fillColor = 'black';
+          title.content = events[i].title;
         }
 
         paper.view.draw();

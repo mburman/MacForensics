@@ -28,13 +28,15 @@
         });
       }
 
-//totaldist/totaltimestamp * timestamp
-
-
       // Draw the timeline.
       function drawTimeline(events) {
         console.log("Number of events: " + events.length);
-        var timeline_length = 2000;
+        var timeline_length = 3000;
+
+        // Adjust canvas.
+        var canvas = document.getElementById("myCanvas");
+        canvas.height = timeline_length;
+        canvas.width = 1000;
 
         // Find the date ranges of events.
         var min_date;
@@ -87,10 +89,9 @@
       }
 
     </script>
-
   </head>
 
   <body>
-    <canvas id="myCanvas" resize></canvas>
+    <canvas id="myCanvas" />
   </body>
 </html>

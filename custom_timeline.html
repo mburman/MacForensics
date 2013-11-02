@@ -6,13 +6,19 @@
     </script>
     <script type="text/javascript" src="js/paper.js"></script>
     <script type="text/javascript" src="js/custom_timeline/custom.js"></script>
-
-    <script type="text/javascript">
+    <script type="text/paperscript" canvas="myCanvas">
       $(document).ready(function () {
         parseJSON("http://localhost:8000/gen/json_file_custom.json");
       });
 
       // TODO:Refactor heavily.
+
+      // A timeline event.
+      function Event(title, description, start) {
+        this.title = title;
+        this.description = description;
+        this.start = new Date(start);
+      }
 
       // Parse a JSON file and return a list of events.
       function parseJSON(json_file) {
@@ -22,6 +28,7 @@
         var jqxhr = $.getJSON(json_file, function (json) {
           $.each(json.events, function (index, item) {
             event = new Event(item.title, item.description, item.start);
+            console.log(event.start);
             events.push(event);
           });
         });
@@ -30,6 +37,9 @@
           return drawTimeline(events);
         });
       }
+
+
+
 
 
       // Draw the timeline.
@@ -43,7 +53,6 @@
         );
 
         drawTimelineWithMonthGranularity(events);
-
       }
 
 

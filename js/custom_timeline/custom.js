@@ -1,10 +1,3 @@
-// A timeline event.
-function Event(title, description, start) {
-  this.title = title;
-  this.description = description;
-  this.start = new Date(start);
-}
-
 function drawTimelineWithMonthGranularity(events) {
   var startYear = events[0].start.getFullYear();
   var endYear = events[events.length - 1].start.getFullYear();
@@ -56,8 +49,45 @@ function drawTimelineWithMonthGranularity(events) {
 
       var circle = new paper.Path.Circle(new paper.Point(timeline_width / 2, i * itemPixels + start_offset), 2);
       circle.fillColor = 'white';
+    
+      var title = new paper.PointText(new paper.Point(timeline_width / 2 + 20, i * itemPixels + start_offset));
+      title.justification = 'left';
+      title.fillColor = 'black';
+      title.events = text.events;
+
+      if (text.events.length > 0) {
+        title.content = title.events[0].title;
+
+        title.hover = false;
+        title.hoverLength = 0;
+        title.eventIndex = 0;
+
+        title.onMouseEnter = function(event) {
+          this.hover = true;
+        }
+
+        title.onMouseLeave = function(event) {
+          this.hover = false;
+        }
+
+        title.onFrame = function(event) {
+          if (this.hover) {
+            this.hoverLength ++;
+            if (this.hoverLength % 30 == 0) {
+              var eventIndexToDisplay = ++this.eventIndex % this.events.length;
+              this.content = this.events[eventIndexToDisplay].title;
+            }
+          } else {
+            this.hoverLength = 0;
+          }
+        }
+      }
+
+   
+    
     }
 
+/*
     for (var i = 0; i < events.length; i++) {
       // Need to figure out which month it falls in.
       eventMonth = events[i].start.getMonth() + 1;
@@ -75,7 +105,7 @@ function drawTimelineWithMonthGranularity(events) {
       myCircle.fillColor = 'white';
       myCircle.strokeColor = '#ff0000';
     }
-
+*/
     paper.view.draw();
 }
 

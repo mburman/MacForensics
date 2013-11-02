@@ -4,14 +4,13 @@
 	  <script src="js/jquery-ui-1.10.3.custom/jquery-1.9.1.js"></script>
 	  <script src="js/jquery-ui-1.10.3.custom/jquery-ui-1.10.3.custom.js"></script>
 
+    <script type="text/javascript" src="js/xdate.js"></script>
     <script type="text/javascript" src="js/paper.js"></script>
     <script type="text/javascript" src="js/custom_timeline/custom.js"></script>
     <script type="text/paperscript" canvas="myCanvas">
       $(document).ready(function () {
         parseJSON("http://localhost:8000/gen/json_file_custom.json");
       });
-
-      // TODO:Refactor heavily.
 
       // A timeline event.
       function Event(title, description, start) {
@@ -20,7 +19,7 @@
         this.start = new Date(start);
       }
 
-      // Parse a JSON file and return a list of events.
+      // Parse a JSON file of events.
       function parseJSON(json_file) {
         var events = new Array();
 
@@ -37,13 +36,10 @@
         });
       }
 
-
-
-
-
       // Draw the timeline.
       function drawTimeline(events) {
         console.log("Number of events: " + events.length);
+
         // Sort in ascending order.
         events = events.sort(
           function(a,b) {
@@ -51,6 +47,7 @@
           }
         );
 
+        // Draw the timeline.
         drawTimelineWithMonthGranularity(events);
       }
 

@@ -107,7 +107,7 @@ function drawTimelineWithMonthGranularity(events) {
           this.data.eventDisplayedIndex++;
           this.data.eventDisplayedIndex %= this.data.events.length;
           this.data.textField.content = this.data.events[this.data.eventDisplayedIndex].title;
-          this.data.textField.currentEvent = this.data.events[this.data.eventDisplayedIndex].title;
+          this.data.textField.currentEvent = this.data.events[this.data.eventDisplayedIndex];
         }
       }
 

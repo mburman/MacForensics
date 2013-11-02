@@ -52,11 +52,12 @@ function drawEventDots(events, index, SCALE_SPACING) {
   }
 }
 
-function drawEventList(events, i, SCALE_SPACING) {
+function drawEventList(timeline, events, i, SCALE_SPACING) {
   var title = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 + 50, i * SCALE_SPACING + START_OFFSET));
   title.justification = 'left';
   title.fillColor = 'black';
   title.events = events;
+  timeline.addChild(title);
 
   if (title.events.length > 0) {
     title.content = title.events[0].title;
@@ -80,10 +81,12 @@ function drawEventList(events, i, SCALE_SPACING) {
   var buttonNext = new paper.Path.RegularPolygon(new paper.Point(TIMELINE_WIDTH / 2 + 35, i * SCALE_SPACING + START_OFFSET), 3, 7);
   buttonNext.fillColor = '#009900';
   buttonNext.rotate(90);
+  timeline.addChild(buttonNext);
 
   var buttonPrevious = new paper.Path.RegularPolygon(new paper.Point(TIMELINE_WIDTH / 2 + 20, i * SCALE_SPACING + START_OFFSET), 3, 7);
   buttonPrevious.fillColor = '#009900';
   buttonPrevious.rotate(-90);
+  timeline.addChild(buttonPrevious);
 
   // Create a blob to hold this data so we can play with it.
   var displayData = new EventDisplayData(title.events, 0, title);
@@ -152,7 +155,9 @@ function drawTimeline(timelineItems) {
   canvas.width = TIMELINE_WIDTH;
 
   paper.setup(canvas);
+  var timeline = new paper.Group();
   var path = new paper.Path();
+  timeline.addChild(path);
   var start = new paper.Point(TIMELINE_WIDTH / 2, START_OFFSET / 2);
   path.moveTo(start);
   path.lineTo(
@@ -173,18 +178,53 @@ function drawTimeline(timelineItems) {
     text.events = timelineItems[i].events; 
 
     text.onMouseDown = function(event) {
-      // Remove previous timeline.
-      //drawTimelineMonth(text.events);
+      // Clear previous timeline
+      this.parent.removeChildren();
+      
+      // TODO: Need to fix. Pass in a function and call that instead.
+      drawTimelineWithDayGranularity(this.events);
     }
+    timeline.addChild(text);
 
     var circle = new paper.Path.Circle(new paper.Point(TIMELINE_WIDTH / 2, i * SCALE_SPACING + START_OFFSET), 2);
     circle.fillColor = 'white';
+    timeline.addChild(circle);
 
-    drawEventList(timelineItems[i].events, i, SCALE_SPACING);
+    drawEventList(timeline, timelineItems[i].events, i, SCALE_SPACING);
     //drawEventDots(text.events, i, SCALE_SPACING);
   }
 
-  paper.view.draw();
+  // TODO: Figure out what this does.
+  // paper.view.draw();
+}
+
+// NOTE: For now, the events must be of the same month.
+function drawTimelineWithDayGranularity(sortedEvents) {
+  events = sortedEvents;
+  numDays = daysInMonth(
+    sortedEvents[0].start.getFullYear(),
+    sortedEvents[0].start.getMonth()
+  );
+
+  timelineItems = new Array();
+  for (var i=0; i < numDays; i++) {
+    filteredEvents = getEventsInYearAndMonthAndDate(
+      sortedEvents,
+      sortedEvents[0].start.getFullYear(),
+      sortedEvents[0].start.getMonth(),
+      i + 1 // date index is from 1 - 31
+    );
+
+    console.log(filteredEvents.length);
+    itemTitle = i; // title is just the day number
+    timelineItem = new TimelineItem(
+      filteredEvents,
+      itemTitle
+    );
+    timelineItems.push(timelineItem);
+  }
+
+  drawTimeline(timelineItems);
 }
 
 function drawTimelineWithMonthGranularity(sortedEvents) {
@@ -213,18 +253,31 @@ function drawTimelineWithMonthGranularity(sortedEvents) {
   drawTimeline(timelineItems);
 }
 
+// TODO: Fix... this is a bad way of doing it.
+function getEventsInYearAndMonthAndDate(events, year, month, date) {
+  filteredEvents = Array();
+  
+  events = getEventsInYearAndMonth(events, year, month);
+  for (var i = 0; i < events.length; i++) {
+    if (events[i].start.getDate() == date) {
+      filteredEvents.push(events[i]);
+    }
+  }
+  return filteredEvents;
+}
+
 function getEventsInYearAndMonth(events, year, month) {
-  var toReturn = Array();
+  var filteredEvents = Array();
   for (var i = 0; i < events.length; i++) {
     if (events[i].start.getFullYear() == year &&
     events[i].start.getMonth() == month) {
-      toReturn.push(events[i]);
+      filteredEvents.push(events[i]);
     }
   }
-  return toReturn;
+  return filteredEvents;
 }
 
-function daysInMonth(month,year) {
+function daysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
 }
 

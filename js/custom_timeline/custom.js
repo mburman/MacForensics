@@ -1,3 +1,5 @@
+// TODO: FAR TOO MANY MAGIC NUMBERS. GET RID OF THEM!
+//
 // Holds a list of eventsm index of the event being displayed and the field in
 // which it is displayed.
 function EventDisplayData(events, eventDisplayedIndex, textField) {
@@ -63,6 +65,27 @@ function drawTimelineWithMonthGranularity(events) {
       title.fillColor = 'black';
       title.events = text.events;
 
+      if (text.events.length > 0) {
+        title.content = title.events[0].title;
+        title.currentEvent = title.events[0];
+
+        title.onMouseDown = function(event) {
+          var NewDialog = $('<div id="Description">\<p>' + this.currentEvent.description + '</p>\</div>');
+          var position = [ 'center', 200];
+
+          NewDialog.dialog({
+            modal: true,
+            show: 'fade',
+            hide: 'fade',
+            closeOnEscape: true,
+            position: position,
+            title: this.currentEvent.title,
+          });
+
+
+        }
+      }
+
       var buttonNext = new paper.Path.RegularPolygon(new paper.Point(timeline_width / 2 + 35, i * itemPixels + start_offset), 3, 7);
       buttonNext.fillColor = '#009900';
       buttonNext.rotate(90);
@@ -84,10 +107,15 @@ function drawTimelineWithMonthGranularity(events) {
           this.data.eventDisplayedIndex++;
           this.data.eventDisplayedIndex %= this.data.events.length;
           this.data.textField.content = this.data.events[this.data.eventDisplayedIndex].title;
+          this.data.textField.currentEvent = this.data.events[this.data.eventDisplayedIndex].title;
         }
       }
 
       buttonNext.onMouseUp = function(event) {
+        this.fillColor = '#009900';
+      }
+
+      buttonNext.onMouseLeave = function(event) {
         this.fillColor = '#009900';
       }
 
@@ -105,6 +133,7 @@ function drawTimelineWithMonthGranularity(events) {
             this.data.eventDisplayedIndex = this.data.events.length - 1;
           }
           this.data.textField.content = this.data.events[this.data.eventDisplayedIndex].title;
+          this.data.textField.currentEvent = this.data.events[this.data.eventDisplayedIndex];
         }
       }
 
@@ -112,10 +141,14 @@ function drawTimelineWithMonthGranularity(events) {
         this.fillColor = '#009900';
       }
 
+      buttonPrevious.onMouseLeave = function(event) {
+        this.fillColor = '#009900';
+      }
+
       if (text.events.length > 0) {
         title.content = title.events[0].title;
       }
-    
+
     }
 
 /*

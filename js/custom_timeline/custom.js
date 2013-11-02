@@ -8,6 +8,11 @@ var END_OFFSET = 50;
 var TIMELINE_WIDTH = 1200;
 
 var EVENTS_OFFSET = 30;
+
+// Give each month n pixels.
+var SCALE_SPACING = 40;
+
+
 // TODO: FAR TOO MANY MAGIC NUMBERS. GET RID OF THEM!
 //
 // Holds a list of eventsm index of the event being displayed and the field in
@@ -18,8 +23,13 @@ function EventDisplayData(events, eventDisplayedIndex, textField) {
   this.textField = textField;
 }
 
+function TimelineItem(events, title) {
+  this.events = events;
+  this.title = title;
+}
+
 // Display events as dots instead of in a text field.
-function drawEventDots(events, index, scaleSpacing) {
+function drawEventDots(events, index, SCALE_SPACING) {
   if (events.length == 0) {
     return;
   }
@@ -34,7 +44,7 @@ function drawEventDots(events, index, scaleSpacing) {
 
     var point = new paper.Point(
       TIMELINE_WIDTH / 2 + j * widthSpacing + EVENTS_OFFSET, 
-      (index + offset) * scaleSpacing + START_OFFSET
+      (index + offset) * SCALE_SPACING + START_OFFSET
     );
 
     var circle = new paper.Path.Circle(point, 3);
@@ -42,8 +52,8 @@ function drawEventDots(events, index, scaleSpacing) {
   }
 }
 
-function drawEventList(events, i, scaleSpacing) {
-  var title = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 + 50, i * scaleSpacing + START_OFFSET));
+function drawEventList(events, i, SCALE_SPACING) {
+  var title = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 + 50, i * SCALE_SPACING + START_OFFSET));
   title.justification = 'left';
   title.fillColor = 'black';
   title.events = events;
@@ -64,16 +74,14 @@ function drawEventList(events, i, scaleSpacing) {
         position: position,
         title: this.currentEvent.title,
       });
-
-
     }
   }
 
-  var buttonNext = new paper.Path.RegularPolygon(new paper.Point(TIMELINE_WIDTH / 2 + 35, i * scaleSpacing + START_OFFSET), 3, 7);
+  var buttonNext = new paper.Path.RegularPolygon(new paper.Point(TIMELINE_WIDTH / 2 + 35, i * SCALE_SPACING + START_OFFSET), 3, 7);
   buttonNext.fillColor = '#009900';
   buttonNext.rotate(90);
 
-  var buttonPrevious = new paper.Path.RegularPolygon(new paper.Point(TIMELINE_WIDTH / 2 + 20, i * scaleSpacing + START_OFFSET), 3, 7);
+  var buttonPrevious = new paper.Path.RegularPolygon(new paper.Point(TIMELINE_WIDTH / 2 + 20, i * SCALE_SPACING + START_OFFSET), 3, 7);
   buttonPrevious.fillColor = '#009900';
   buttonPrevious.rotate(-90);
 
@@ -133,9 +141,54 @@ function drawEventList(events, i, scaleSpacing) {
   }
 }
 
+
 // Draws the timeline.
-function drawTimelineWithMonthGranularity(sorted_events) {
-  events = sorted_events;
+function drawTimeline(timelineItems) {
+  var timelineLength = timelineItems.length * SCALE_SPACING;
+
+  // Adjust canvas to appropriate size.
+  var canvas = document.getElementById("myCanvas");
+  canvas.height = timelineLength + START_OFFSET + END_OFFSET;
+  canvas.width = TIMELINE_WIDTH;
+
+  paper.setup(canvas);
+  var path = new paper.Path();
+  var start = new paper.Point(TIMELINE_WIDTH / 2, START_OFFSET / 2);
+  path.moveTo(start);
+  path.lineTo(
+    start.add(
+      [ 0, timelineLength - SCALE_SPACING + START_OFFSET / 2 + END_OFFSET / 2]
+    )
+  );
+  path.strokeColor = '#ff0000';
+  path.strokeWidth = 10;
+  path.strokeCap = 'round';
+
+  // Draw month names.
+  for (var i=0; i < timelineItems.length; i++) {
+    var text = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 - 20, i * SCALE_SPACING + START_OFFSET));
+    text.justification = 'right';
+    text.fillColor = 'black';
+    text.content = timelineItems[i].title;
+    text.events = timelineItems[i].events; 
+
+    text.onMouseDown = function(event) {
+      // Remove previous timeline.
+      //drawTimelineMonth(text.events);
+    }
+
+    var circle = new paper.Path.Circle(new paper.Point(TIMELINE_WIDTH / 2, i * SCALE_SPACING + START_OFFSET), 2);
+    circle.fillColor = 'white';
+
+    drawEventList(timelineItems[i].events, i, SCALE_SPACING);
+    //drawEventDots(text.events, i, SCALE_SPACING);
+  }
+
+  paper.view.draw();
+}
+
+function drawTimelineWithMonthGranularity(sortedEvents) {
+  events = sortedEvents;
   var startYear = events[0].start.getFullYear();
   var endYear = events[events.length - 1].start.getFullYear();
 
@@ -145,49 +198,19 @@ function drawTimelineWithMonthGranularity(sorted_events) {
   var numMonths = endMonth + (13 - startMonth) + (endYear - startYear) * 12 - 12;
   console.log(numMonths);
 
-  // Give each month n pixels.
-  var scaleSpacing = 40;
+  timelineItems = new Array();
+  for (var i=0; i < numMonths; i++) {
+    var monthNumber = ((startMonth -1) + i) % 12;
+    var yearNumber = startYear + Math.floor(((startMonth - 1) + i) / 12);
+  
+    timelineItem = new TimelineItem(
+      getEventsInYearAndMonth(events, yearNumber, monthNumber), // events in this item
+      (monthNames[monthNumber] + ' ' + yearNumber) // title of this item
+    );
+    timelineItems.push(timelineItem);
+  }
 
-  var timeline_length = scaleSpacing * numMonths;
-
-  // Adjust canvas to appropriate size.
-  var canvas = document.getElementById("myCanvas");
-  canvas.height = timeline_length + START_OFFSET + END_OFFSET;
-  canvas.width = TIMELINE_WIDTH;
-
-  paper.setup(canvas);
-  var path = new paper.Path();
-  var start = new paper.Point(TIMELINE_WIDTH / 2, START_OFFSET / 2);
-  path.moveTo(start);
-  path.lineTo(start.add([ 0, timeline_length - scaleSpacing + START_OFFSET
-    / 2 + END_OFFSET / 2]));
-    path.strokeColor = '#ff0000';
-    path.strokeWidth = 10;
-    path.strokeCap = 'round';
-
-    // Draw month names.
-    for (var i=0; i < numMonths; i++) {
-      var monthNumber = ((startMonth -1) + i) % 12;
-      var yearNumber = startYear + Math.floor(((startMonth - 1) + i) / 12);
-
-      var text = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 - 20, i * scaleSpacing + START_OFFSET));
-      text.justification = 'right';
-      text.fillColor = 'black';
-      text.content = monthNames[monthNumber] + " " + yearNumber;
-      text.events = getEventsInYearAndMonth(events, yearNumber, monthNumber);
-
-      text.onMouseDown = function(event) {
-        // TODO: Display text.events in a nice popup.. or something.
-      }
-
-      var circle = new paper.Path.Circle(new paper.Point(TIMELINE_WIDTH / 2, i * scaleSpacing + START_OFFSET), 2);
-      circle.fillColor = 'white';
-    
-      // drawEventList(text.events, i, scaleSpacing);
-      drawEventDots(text.events, i, scaleSpacing);
-    }
-    
-    paper.view.draw();
+  drawTimeline(timelineItems);
 }
 
 function getEventsInYearAndMonth(events, year, month) {

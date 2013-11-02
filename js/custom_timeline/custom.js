@@ -1,3 +1,11 @@
+// Holds a list of eventsm index of the event being displayed and the field in
+// which it is displayed.
+function EventDisplayData(events, eventDisplayedIndex, textField) {
+  this.events = events;
+  this.eventDisplayedIndex = eventDisplayedIndex;
+  this.textField = textField;
+}
+
 function drawTimelineWithMonthGranularity(events) {
   var startYear = events[0].start.getFullYear();
   var endYear = events[events.length - 1].start.getFullYear();
@@ -50,40 +58,63 @@ function drawTimelineWithMonthGranularity(events) {
       var circle = new paper.Path.Circle(new paper.Point(timeline_width / 2, i * itemPixels + start_offset), 2);
       circle.fillColor = 'white';
     
-      var title = new paper.PointText(new paper.Point(timeline_width / 2 + 20, i * itemPixels + start_offset));
+      var title = new paper.PointText(new paper.Point(timeline_width / 2 + 50, i * itemPixels + start_offset));
       title.justification = 'left';
       title.fillColor = 'black';
       title.events = text.events;
 
-      if (text.events.length > 0) {
-        title.content = title.events[0].title;
+      var buttonNext = new paper.Path.RegularPolygon(new paper.Point(timeline_width / 2 + 35, i * itemPixels + start_offset), 3, 7);
+      buttonNext.fillColor = '#009900';
+      buttonNext.rotate(90);
 
-        title.hover = false;
-        title.hoverLength = 0;
-        title.eventIndex = 0;
+      var buttonPrevious = new paper.Path.RegularPolygon(new paper.Point(timeline_width / 2 + 20, i * itemPixels + start_offset), 3, 7);
+      buttonPrevious.fillColor = '#009900';
+      buttonPrevious.rotate(-90);
 
-        title.onMouseEnter = function(event) {
-          this.hover = true;
-        }
+      // Create a blob to hold this data so we can play with it.
+      var displayData = new EventDisplayData(text.events, 0, title);
+      buttonNext.data = displayData;
+      buttonPrevious.data = displayData;
 
-        title.onMouseLeave = function(event) {
-          this.hover = false;
-        }
+      buttonNext.onMouseDown = function(event) {
+        this.fillColor = '#33CC66';
 
-        title.onFrame = function(event) {
-          if (this.hover) {
-            this.hoverLength ++;
-            if (this.hoverLength % 30 == 0) {
-              var eventIndexToDisplay = ++this.eventIndex % this.events.length;
-              this.content = this.events[eventIndexToDisplay].title;
-            }
-          } else {
-            this.hoverLength = 0;
-          }
+        if (this.data.events.length > 1) {
+          // Display the next event.
+          this.data.eventDisplayedIndex++;
+          this.data.eventDisplayedIndex %= this.data.events.length;
+          this.data.textField.content = this.data.events[this.data.eventDisplayedIndex].title;
         }
       }
 
-   
+      buttonNext.onMouseUp = function(event) {
+        this.fillColor = '#009900';
+      }
+
+
+      buttonPrevious.onMouseDown = function(event) {
+        this.fillColor = '#33CC66';
+
+        if (this.data.events.length > 1) {
+          // Display the previous event.
+          this.data.eventDisplayedIndex--;
+          this.data.eventDisplayedIndex %= this.data.events.length;
+
+          // Index can become negative when scrolling backwards. If so, reset index. 
+          if (this.data.eventDisplayedIndex < 0) {
+            this.data.eventDisplayedIndex = this.data.events.length - 1;
+          }
+          this.data.textField.content = this.data.events[this.data.eventDisplayedIndex].title;
+        }
+      }
+
+      buttonPrevious.onMouseUp = function(event) {
+        this.fillColor = '#009900';
+      }
+
+      if (text.events.length > 0) {
+        title.content = title.events[0].title;
+      }
     
     }
 

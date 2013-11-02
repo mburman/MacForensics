@@ -28,7 +28,6 @@
         var jqxhr = $.getJSON(json_file, function (json) {
           $.each(json.events, function (index, item) {
             event = new Event(item.title, item.description, item.start);
-            console.log(event.start);
             events.push(event);
           });
         });

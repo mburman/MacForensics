@@ -28,6 +28,27 @@ function TimelineItem(events, title) {
   this.title = title;
 }
 
+// Indicates how a group was transformed(in this case in the x and y direction)
+function Transform(group, x, y, undoTransform) {
+  this.group = group;
+  this.x = x;
+  this.y = y;
+  this.undoTransform = undoTransform;
+}
+
+// Undoes translation along x and y.
+function undoTranslationTransform() {
+  this.group.position.x -= this.x;
+  this.group.position.y -= this.y;
+}
+
+function undoExistanceTransform() {
+  this.group.remove();
+}
+
+// Holds all current transforms.
+var currentTransforms = new Array();
+
 // Display events as dots instead of in a text field.
 function drawEventDots(events, index, SCALE_SPACING) {
   if (events.length == 0) {
@@ -191,6 +212,12 @@ function drawTimeline(timelineItems, offset) {
     }
 
     text.onMouseDown = function(event) {
+      // Undo all current transforms.
+      for (var j = 0; j < currentTransforms.length; j++) {
+        currentTransforms[j].undoTransform();
+      }
+      currentTransforms = new Array();
+
       var month = this.events[0].start.getMonth();
       var year = this.events[0].start.getFullYear();
       translationAmount = daysInMonth(year, month);
@@ -201,6 +228,9 @@ function drawTimeline(timelineItems, offset) {
       // move all other groups down.
       groupToMove = groupToMove.nextSibling;
       while (groupToMove) {
+        transform = new Transform(groupToMove, 0, SCALE_SPACING * translationAmount, undoTranslationTransform);
+        currentTransforms.push(transform);
+
         groupToMove.position.y += SCALE_SPACING * translationAmount;
         groupToMove = groupToMove.nextSibling;
       }
@@ -210,7 +240,9 @@ function drawTimeline(timelineItems, offset) {
       nextOffset = (this.i + 1) * SCALE_SPACING;
 
       // TODO: Need to fix. Pass in a function and call that instead.
-      drawTimelineWithDayGranularity(this.events, nextOffset);
+      group = drawTimelineWithDayGranularity(this.events, nextOffset);
+      transform = new Transform(group, 0, 0, undoExistanceTransform);
+      currentTransforms.push(transform);
     }
 
     // Group for each timeline item.
@@ -241,6 +273,7 @@ function drawTimeline(timelineItems, offset) {
     //drawEventDots(text.events, i, SCALE_SPACING);
   }
 
+  return timeline;
 
   // TODO: Figure out what this does.
 //  paper.view.draw();
@@ -271,7 +304,7 @@ function drawTimelineWithDayGranularity(sortedEvents, offset) {
     timelineItems.push(timelineItem);
   }
 
-  drawTimeline(timelineItems, offset);
+  return drawTimeline(timelineItems, offset);
 }
 
 function drawTimelineWithMonthGranularity(sortedEvents, offset) {

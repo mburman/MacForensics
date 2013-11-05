@@ -42,7 +42,7 @@ function undoTranslationTransform() {
   this.group.position.y -= this.y;
 }
 
-function undoExistanceTransform() {
+function undoExistenceTransform() {
   this.group.remove();
 }
 
@@ -251,7 +251,7 @@ function drawTimeline(timelineItems, offset) {
 
       // TODO: Need to fix. Pass in a function and call that instead.
       group = drawTimelineWithDayGranularity(this.events, nextOffset);
-      transform = new Transform(group, 0, 0, undoExistanceTransform);
+      transform = new Transform(group, 0, 0, undoExistenceTransform);
       currentTransforms.push(transform);
     }
 

@@ -28,22 +28,35 @@ function TimelineItem(events, title) {
   this.title = title;
 }
 
+// TODO: Rewrite these to one transform function... very bad style right now.
 // Indicates how a group was transformed(in this case in the x and y direction)
-function Transform(group, x, y, undoTransform) {
-  this.group = group;
+function Transform(object, x, y, undoTransform) {
+  this.object = object;
   this.x = x;
   this.y = y;
   this.undoTransform = undoTransform;
 }
 
+function SizeTransform(object, width, height, undoTransform) {
+  this.object = object;
+  this.width = width;
+  this.height = height;
+  this.undoTransform = undoTransform;
+}
+
 // Undoes translation along x and y.
 function undoTranslationTransform() {
-  this.group.position.x -= this.x;
-  this.group.position.y -= this.y;
+  this.object.position.x -= this.x;
+  this.object.position.y -= this.y;
 }
 
 function undoExistenceTransform() {
-  this.group.remove();
+  this.object.remove();
+}
+
+function undoSizeTransform() {
+  this.object.height -= this.height;
+  this.object.width -= this.width;
 }
 
 // Holds all current transforms.
@@ -169,13 +182,11 @@ function drawEventList(timeline, events, i, SCALE_SPACING, offset) {
 
 // Draws the timeline.
 function drawTimeline(timelineItems, offset, timelineType) {
+  // Length of the current timeline.
   var timelineLength = timelineItems.length * SCALE_SPACING;
 
-  // Adjust canvas to appropriate size.
+  // Setup canvas.
   var canvas = document.getElementById("myCanvas");
-  canvas.height = 5000; // timelineLength + START_OFFSET + END_OFFSET;
-  canvas.width = TIMELINE_WIDTH;
-
   if (timelineType == TimelineType.month) {
     paper.setup(canvas);
   }
@@ -208,7 +219,7 @@ function drawTimeline(timelineItems, offset, timelineType) {
       // TODO: gotta clean up... this is too messy.
       var previousGroup = null;
       if (currentTransforms.length > 0) {
-        previousGroup = currentTransforms[0].group;
+        previousGroup = currentTransforms[0].object;
       }
 
       // Undo all current transforms.
@@ -278,6 +289,25 @@ function drawTimeline(timelineItems, offset, timelineType) {
     drawEventList(timeline, timelineItems[i].events, i, SCALE_SPACING, offset);
     //drawEventDots(text.events, i, SCALE_SPACING);
   }
+
+  // Adjust canvas to appropriate size.
+  if (timelineType == TimelineType.day) {
+    canvas.height += timelineLength;
+    paper.view.viewSize.height += canvas.height;
+
+    // Create transforms - so we can undo them later.
+    canvasTransform = new SizeTransform(canvas, 0, timelineLength, undoSizeTransform);
+    viewTransform = new SizeTransform(paper.view.viewSize, 0, timelineLength, undoSizeTransform);
+    currentTransforms.push(canvasTransform);
+    currentTransforms.push(viewTransform);
+  } else {
+    canvas.height = timelineLength + START_OFFSET + END_OFFSET;
+    paper.view.viewSize.height = canvas.height;
+  }
+
+  canvas.width = TIMELINE_WIDTH;
+  paper.view.viewSize.width = canvas.width;
+
 
   return timeline;
 

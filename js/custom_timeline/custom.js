@@ -52,12 +52,12 @@ function drawEventDots(events, index, SCALE_SPACING) {
   }
 }
 
-function drawEventList(timeline, events, i, SCALE_SPACING) {
+function drawEventList(timeline, events, i, SCALE_SPACING, offset) {
   var title = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 + 50, i * SCALE_SPACING + START_OFFSET));
   title.justification = 'left';
   title.fillColor = 'black';
   title.events = events;
-  timeline.addChild(title);
+  timeline.children[i].addChild(title);
 
   if (title.events.length > 0) {
     title.content = title.events[0].title;
@@ -78,15 +78,16 @@ function drawEventList(timeline, events, i, SCALE_SPACING) {
     }
   }
 
-  var buttonNext = new paper.Path.RegularPolygon(new paper.Point(TIMELINE_WIDTH / 2 + 35, i * SCALE_SPACING + START_OFFSET), 3, 7);
+  var buttonNext = new paper.Path.RegularPolygon(new paper.Point(TIMELINE_WIDTH / 2 + 35, offset + i * SCALE_SPACING + START_OFFSET), 3, 7);
   buttonNext.fillColor = '#009900';
   buttonNext.rotate(90);
-  timeline.addChild(buttonNext);
+  timeline.children[i].addChild(buttonNext);
 
-  var buttonPrevious = new paper.Path.RegularPolygon(new paper.Point(TIMELINE_WIDTH / 2 + 20, i * SCALE_SPACING + START_OFFSET), 3, 7);
+  var buttonPrevious = new paper.Path.RegularPolygon(new paper.Point(TIMELINE_WIDTH / 2 + 20, offset + i * SCALE_SPACING + START_OFFSET), 3, 7);
   buttonPrevious.fillColor = '#009900';
   buttonPrevious.rotate(-90);
   timeline.addChild(buttonPrevious);
+  timeline.children[i].addChild(buttonPrevious);
 
   // Create a blob to hold this data so we can play with it.
   var displayData = new EventDisplayData(title.events, 0, title);
@@ -146,7 +147,7 @@ function drawEventList(timeline, events, i, SCALE_SPACING) {
 
 
 // Draws the timeline.
-function drawTimeline(timelineItems) {
+function drawTimeline(timelineItems, offset) {
   var timelineLength = timelineItems.length * SCALE_SPACING;
 
   // Adjust canvas to appropriate size.
@@ -154,11 +155,14 @@ function drawTimeline(timelineItems) {
   canvas.height = timelineLength + START_OFFSET + END_OFFSET;
   canvas.width = TIMELINE_WIDTH;
 
-  paper.setup(canvas);
+  // TODO: Fix. Temporary hack.
+  if (offset == 0) {
+    paper.setup(canvas);
+  }
+
   var timeline = new paper.Group();
   var path = new paper.Path();
-  timeline.addChild(path);
-  var start = new paper.Point(TIMELINE_WIDTH / 2, START_OFFSET / 2);
+  var start = new paper.Point(TIMELINE_WIDTH / 2,  offset + START_OFFSET / 2);
   path.moveTo(start);
   path.lineTo(
     start.add(
@@ -168,38 +172,67 @@ function drawTimeline(timelineItems) {
   path.strokeColor = '#ff0000';
   path.strokeWidth = 10;
   path.strokeCap = 'round';
+  
 
   // Draw month names.
   for (var i=0; i < timelineItems.length; i++) {
-    var text = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 - 20, i * SCALE_SPACING + START_OFFSET));
+    var text = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 - 20,  offset + i * SCALE_SPACING + START_OFFSET));
     text.justification = 'right';
     text.fillColor = 'black';
     text.content = timelineItems[i].title;
     text.events = timelineItems[i].events; 
+    text.i = i;
+    text.onMouseEnter = function(event) {
+      text.fillColor = '#222222';
+    }
+
+    text.onMouseLeave = function(event) {
+      text.fillColor = 'black';
+    }
 
     text.onMouseDown = function(event) {
-      // Clear previous timeline
-      this.parent.removeChildren();
       
+      // handle this group appropriately since this is being expanded.
+      var groupToMove = this.parent;
+      
+      // move all other groups down.
+      groupToMove = groupToMove.nextSibling;
+      while (groupToMove) {
+        groupToMove.position.y += SCALE_SPACING * 31;
+        groupToMove = groupToMove.nextSibling;
+      }
+
+      // Clear previous timeline
+      //this.parent.removeChildren();
+     
+      nextOffset = (this.i + 1) * SCALE_SPACING; 
+
       // TODO: Need to fix. Pass in a function and call that instead.
-      drawTimelineWithDayGranularity(this.events);
+      drawTimelineWithDayGranularity(this.events, nextOffset);
     }
-    timeline.addChild(text);
 
-    var circle = new paper.Path.Circle(new paper.Point(TIMELINE_WIDTH / 2, i * SCALE_SPACING + START_OFFSET), 2);
+    // Group for each timeline item.
+    var itemGroup = new paper.Group();
+    itemGroup.addChild(text);
+    timeline.addChild(itemGroup);
+
+    var circle = new paper.Path.Circle(new paper.Point(TIMELINE_WIDTH / 2,  offset + i * SCALE_SPACING + START_OFFSET), 2);
     circle.fillColor = 'white';
-    timeline.addChild(circle);
+    timeline.children[i].addChild(circle);
 
-    drawEventList(timeline, timelineItems[i].events, i, SCALE_SPACING);
+    drawEventList(timeline, timelineItems[i].events, i, SCALE_SPACING, offset);
     //drawEventDots(text.events, i, SCALE_SPACING);
   }
 
+  timeline.addChild(path);
+  path.moveBelow(timeline);
+  
   // TODO: Figure out what this does.
-  // paper.view.draw();
+//  paper.view.draw();
 }
 
 // NOTE: For now, the events must be of the same month.
-function drawTimelineWithDayGranularity(sortedEvents) {
+function drawTimelineWithDayGranularity(sortedEvents, offset) {
   events = sortedEvents;
   numDays = daysInMonth(
     sortedEvents[0].start.getFullYear(),
@@ -215,7 +248,6 @@ function drawTimelineWithDayGranularity(sortedEvents) {
       i + 1 // date index is from 1 - 31
     );
 
-    console.log(filteredEvents.length);
     itemTitle = i; // title is just the day number
     timelineItem = new TimelineItem(
       filteredEvents,
@@ -224,10 +256,10 @@ function drawTimelineWithDayGranularity(sortedEvents) {
     timelineItems.push(timelineItem);
   }
 
-  drawTimeline(timelineItems);
+  drawTimeline(timelineItems, offset);
 }
 
-function drawTimelineWithMonthGranularity(sortedEvents) {
+function drawTimelineWithMonthGranularity(sortedEvents, offset) {
   events = sortedEvents;
   var startYear = events[0].start.getFullYear();
   var endYear = events[events.length - 1].start.getFullYear();
@@ -236,7 +268,6 @@ function drawTimelineWithMonthGranularity(sortedEvents) {
   var startMonth = events[0].start.getMonth() + 1;
   var endMonth = events[events.length - 1].start.getMonth() + 1;
   var numMonths = endMonth + (13 - startMonth) + (endYear - startYear) * 12 - 12;
-  console.log(numMonths);
 
   timelineItems = new Array();
   for (var i=0; i < numMonths; i++) {
@@ -250,7 +281,7 @@ function drawTimelineWithMonthGranularity(sortedEvents) {
     timelineItems.push(timelineItem);
   }
 
-  drawTimeline(timelineItems);
+  drawTimeline(timelineItems, 0);
 }
 
 // TODO: Fix... this is a bad way of doing it.

@@ -86,32 +86,7 @@ function drawEventDots(events, index, SCALE_SPACING) {
   }
 }
 
-function drawEventList(timeline, events, i, SCALE_SPACING, offset) {
-  var title = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 + 50, offset + i * SCALE_SPACING + START_OFFSET));
-  title.justification = 'left';
-  title.fillColor = 'black';
-  title.events = events;
-  timeline.children[i].addChild(title);
-
-  if (title.events.length > 0) {
-    title.content = title.events[0].title;
-    title.currentEvent = title.events[0];
-
-    title.onMouseDown = function(event) {
-      var NewDialog = $('<div id="Description">\<p>' + this.currentEvent.description + '</p>\</div>');
-      var position = [ 'center', 200];
-
-      NewDialog.dialog({
-        modal: true,
-        show: 'fade',
-        hide: 'fade',
-        closeOnEscape: true,
-        position: position,
-        title: this.currentEvent.title,
-      });
-    }
-  }
-
+function addButtons(timeline, events, offset, i, title) {
   var buttonNext = new paper.Path.RegularPolygon(new paper.Point(TIMELINE_WIDTH / 2 + 35, offset + i * SCALE_SPACING + START_OFFSET), 3, 7);
   buttonNext.fillColor = Colors.arrow.default;
   buttonNext.rotate(90);
@@ -173,6 +148,35 @@ function drawEventList(timeline, events, i, SCALE_SPACING, offset) {
   buttonPrevious.onMouseLeave = function(event) {
     this.fillColor = Colors.arrow.default;
   }
+}
+
+function drawEventList(timeline, events, i, SCALE_SPACING, offset) {
+  var title = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 + 50, offset + i * SCALE_SPACING + START_OFFSET));
+  title.justification = 'left';
+  title.fillColor = 'black';
+  title.events = events;
+  timeline.children[i].addChild(title);
+
+  if (title.events.length > 0) {
+    title.content = title.events[0].title;
+    title.currentEvent = title.events[0];
+
+    title.onMouseDown = function(event) {
+      var NewDialog = $('<div id="Description">\<p>' + this.currentEvent.description + '</p>\</div>');
+      var position = [ 'center', 200];
+
+      NewDialog.dialog({
+        modal: true,
+        show: 'fade',
+        hide: 'fade',
+        closeOnEscape: true,
+        position: position,
+        title: this.currentEvent.title,
+      });
+    }
+  }
+
+  addButtons(timeline, title.events, offset, i, title)
 
   if (title.events.length > 0) {
     title.content = title.events[0].title;

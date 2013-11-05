@@ -186,17 +186,23 @@ function drawTimeline(timelineItems, offset) {
   // Draw month names.
   for (var i=0; i < timelineItems.length; i++) {
     var text = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 - 20,  offset + i * SCALE_SPACING + START_OFFSET));
-    text.justification = 'right';
-    text.fillColor = 'black';
     text.content = timelineItems[i].title;
     text.events = timelineItems[i].events;
     text.i = i;
+
+    text.style = {
+      fillColor: 'black',
+      justification: 'right'
+    };
+
     text.onMouseEnter = function(event) {
-      text.fillColor = '#222222';
+      this.fillColor = 'red';
+      this.fontSize = 13;
     }
 
     text.onMouseLeave = function(event) {
-      text.fillColor = 'black';
+      this.fillColor = 'black';
+      this.fontSize = 12;
     }
 
     text.onMouseDown = function(event) {

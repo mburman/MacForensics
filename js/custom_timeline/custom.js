@@ -182,18 +182,6 @@ function drawTimeline(timelineItems, offset) {
   }
 
   var timeline = new paper.Group();
-  var path = new paper.Path();
-  var start = new paper.Point(TIMELINE_WIDTH / 2,  offset + START_OFFSET / 2);
-  path.moveTo(start);
-  path.lineTo(
-    start.add(
-      [ 0, START_OFFSET / 2]
-    )
-  );
-  path.strokeColor = '#ff0000';
-  path.strokeWidth = 10;
-  path.strokeCap = 'round';
-
 
   // Draw month names.
   for (var i=0; i < timelineItems.length; i++) {

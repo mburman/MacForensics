@@ -212,6 +212,12 @@ function drawTimeline(timelineItems, offset) {
     }
 
     text.onMouseDown = function(event) {
+      // TODO: gotta clean up... this is too messy.
+      var previousGroup = null;
+      if (currentTransforms.length > 0) {
+        previousGroup = currentTransforms[0].group;
+      }
+
       // Undo all current transforms.
       for (var j = 0; j < currentTransforms.length; j++) {
         currentTransforms[j].undoTransform();
@@ -224,6 +230,16 @@ function drawTimeline(timelineItems, offset) {
 
       // handle this group appropriately since this is being expanded.
       var groupToMove = this.parent;
+
+      // If the same title is being clicked, don't redraw.
+      if ((previousGroup != null) && (groupToMove.id == previousGroup.id)) {
+        console.log("lo");
+        return;
+      }
+
+      // For now... dummy transform
+      transform = new Transform(groupToMove, 0, 0, undoTranslationTransform);
+      currentTransforms.push(transform);
 
       // move all other groups down.
       groupToMove = groupToMove.nextSibling;

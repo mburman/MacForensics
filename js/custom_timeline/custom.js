@@ -69,7 +69,7 @@ function drawEventDots(events, index, SCALE_SPACING) {
     );
 
     var circle = new paper.Path.Circle(point, 3);
-    circle.fillColor = '#009900';
+    circle.fillColor = Colors.circle.events;
   }
 }
 
@@ -100,12 +100,12 @@ function drawEventList(timeline, events, i, SCALE_SPACING, offset) {
   }
 
   var buttonNext = new paper.Path.RegularPolygon(new paper.Point(TIMELINE_WIDTH / 2 + 35, offset + i * SCALE_SPACING + START_OFFSET), 3, 7);
-  buttonNext.fillColor = '#009900';
+  buttonNext.fillColor = Colors.arrow.default;
   buttonNext.rotate(90);
   timeline.children[i].addChild(buttonNext);
 
   var buttonPrevious = new paper.Path.RegularPolygon(new paper.Point(TIMELINE_WIDTH / 2 + 20, offset + i * SCALE_SPACING + START_OFFSET), 3, 7);
-  buttonPrevious.fillColor = '#009900';
+  buttonPrevious.fillColor = Colors.arrow.default;
   buttonPrevious.rotate(-90);
   timeline.addChild(buttonPrevious);
   timeline.children[i].addChild(buttonPrevious);
@@ -116,7 +116,7 @@ function drawEventList(timeline, events, i, SCALE_SPACING, offset) {
   buttonPrevious.data = displayData;
 
   buttonNext.onMouseDown = function(event) {
-    this.fillColor = '#33CC66';
+    this.fillColor = Colors.arrow.onMouseDown;
 
     if (this.data.events.length > 1) {
       // Display the next event.
@@ -128,16 +128,16 @@ function drawEventList(timeline, events, i, SCALE_SPACING, offset) {
   }
 
   buttonNext.onMouseUp = function(event) {
-    this.fillColor = '#009900';
+    this.fillColor = Colors.arrow.default;
   }
 
   buttonNext.onMouseLeave = function(event) {
-    this.fillColor = '#009900';
+    this.fillColor = Colors.arrow.default;
   }
 
 
   buttonPrevious.onMouseDown = function(event) {
-    this.fillColor = '#33CC66';
+    this.fillColor = Colors.arrow.onMouseDown;
 
     if (this.data.events.length > 1) {
       // Display the previous event.
@@ -154,11 +154,11 @@ function drawEventList(timeline, events, i, SCALE_SPACING, offset) {
   }
 
   buttonPrevious.onMouseUp = function(event) {
-    this.fillColor = '#009900';
+    this.fillColor = Colors.arrow.default;
   }
 
   buttonPrevious.onMouseLeave = function(event) {
-    this.fillColor = '#009900';
+    this.fillColor = Colors.arrow.default;
   }
 
   if (title.events.length > 0) {
@@ -168,7 +168,7 @@ function drawEventList(timeline, events, i, SCALE_SPACING, offset) {
 
 
 // Draws the timeline.
-function drawTimeline(timelineItems, offset) {
+function drawTimeline(timelineItems, offset, timelineType) {
   var timelineLength = timelineItems.length * SCALE_SPACING;
 
   // Adjust canvas to appropriate size.
@@ -176,8 +176,7 @@ function drawTimeline(timelineItems, offset) {
   canvas.height = 5000; // timelineLength + START_OFFSET + END_OFFSET;
   canvas.width = TIMELINE_WIDTH;
 
-  // TODO: Fix. Temporary hack.
-  if (offset == 0) {
+  if (timelineType == TimelineType.month) {
     paper.setup(canvas);
   }
 
@@ -227,7 +226,6 @@ function drawTimeline(timelineItems, offset) {
 
       // If the same title is being clicked, don't redraw.
       if ((previousGroup != null) && (groupToMove.id == previousGroup.id)) {
-        console.log("lo");
         return;
       }
 
@@ -245,8 +243,6 @@ function drawTimeline(timelineItems, offset) {
         groupToMove = groupToMove.nextSibling;
       }
 
-      // Clear previous timeline
-      //this.parent.removeChildren();
       nextOffset = (this.i + 1) * SCALE_SPACING;
 
       // TODO: Need to fix. Pass in a function and call that instead.
@@ -268,12 +264,12 @@ function drawTimeline(timelineItems, offset) {
         [ 0, START_OFFSET]
       )
     );
-    path.strokeColor = '#ff0000';
+    path.strokeColor = Colors.timeline.line;
     path.strokeWidth = 10;
     path.strokeCap = 'round';
 
     var circle = new paper.Path.Circle(new paper.Point(TIMELINE_WIDTH / 2,  offset + i * SCALE_SPACING + START_OFFSET), 2);
-    circle.fillColor = 'white';
+    circle.fillColor = Colors.timeline.circle;
 
     timeline.children[i].addChild(path);
     timeline.children[i].addChild(circle);
@@ -314,7 +310,7 @@ function drawTimelineWithDayGranularity(sortedEvents, offset) {
     timelineItems.push(timelineItem);
   }
 
-  return drawTimeline(timelineItems, offset);
+  return drawTimeline(timelineItems, offset, TimelineType.day);
 }
 
 function drawTimelineWithMonthGranularity(sortedEvents, offset) {
@@ -339,7 +335,7 @@ function drawTimelineWithMonthGranularity(sortedEvents, offset) {
     timelineItems.push(timelineItem);
   }
 
-  drawTimeline(timelineItems, 0);
+  drawTimeline(timelineItems, 0, TimelineType.month);
 }
 
 // TODO: Fix... this is a bad way of doing it.
@@ -374,3 +370,18 @@ var monthNames = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"
 ];
+
+var TimelineType = { month: 0, day: 1 };
+var Colors = {
+  arrow: {
+    default: '#009900',
+    onMouseDown: '#33CC66'
+  },
+  circle: {
+    events: '#009900',
+  },
+  timeline: {
+    line: '#ff0000',
+    circle: 'white'
+  }
+};

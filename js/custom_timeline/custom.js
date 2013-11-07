@@ -176,7 +176,7 @@ function addButtons(timeline, events, offset, i, title) {
   buttonPrevious.onMouseLeave = buttonNext.onMouseLeave;
 }
 
-function drawEventList(timeline, events, index, SCALE_SPACING, offset) {
+function drawEventList(timeline, events, index, SCALE_SPACING, offset, descriptionTitle) {
   if (events.length < 1) {
     return;
   }
@@ -232,7 +232,8 @@ function drawEventList(timeline, events, index, SCALE_SPACING, offset) {
     timeline.children[index].addChild(title);
     more.content = '(...)';
     more.font = 'helvetica'
-
+    more.timeline = timeline;
+    more.descriptionTitle = descriptionTitle;
     more.onMouseEnter = function(event) {
       this.font = 'helvetica-bold'
     }
@@ -241,6 +242,15 @@ function drawEventList(timeline, events, index, SCALE_SPACING, offset) {
       this.font = 'helvetica'
     }
 
+    more.onMouseDown = function (event) {
+      description = '<h2>Events on ' + this.descriptionTitle + '</h2><table>';
+      for (var i = 0; i < this.events.length; i++) {
+        description += '<tr><td>' + events[i].start.toUTCString() + '</td><td>' + events[i].title + '</td>';
+      }
+
+      description += "</table>";
+      $("div#description").html(description);
+    }
 
     timeline.children[index].addChild(more);
     title.more = more;
@@ -378,7 +388,7 @@ function drawTimeline(timelineItems, offset, timelineType) {
     itemGroup.addChild(path);
     itemGroup.addChild(circle);
 
-    drawEventList(timeline, timelineItems[i].events, i, SCALE_SPACING, offset);
+    drawEventList(timeline, timelineItems[i].events, i, SCALE_SPACING, offset, text.content);
     //drawEventDots(text.events, i, SCALE_SPACING);
   }
 

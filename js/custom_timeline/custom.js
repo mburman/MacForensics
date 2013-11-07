@@ -177,14 +177,13 @@ function addButtons(timeline, events, offset, i, title) {
 }
 
 function drawEventList(timeline, events, index, SCALE_SPACING, offset, descriptionTitle) {
-  if (events.length < 1) {
+  if (events.length == 0) {
     return;
   }
 
-  var width = TIMELINE_WIDTH / 2 + 50;
   var title = new paper.PointText(
     new paper.Point(
-      width,
+      TIMELINE_WIDTH / 2 + 50,
       offset + index * SCALE_SPACING + START_OFFSET
     )
   );
@@ -192,73 +191,59 @@ function drawEventList(timeline, events, index, SCALE_SPACING, offset, descripti
   title.justification = 'left';
   title.fillColor = 'black';
   title.events = events;
-  timeline.children[index].addChild(title);
-
   title.content = events[0].title;
   title.currentEvent = events[0];
-
-  title.justification = 'left';
+  timeline.children[index].addChild(title);
 
   title.onMouseDown = function(event) {
-/*    var NewDialog = $('<div id="Description">\<p>' + this.currentEvent.description + '</p>\</div>');
-    var position = [ 'center', 200];
-
-    NewDialog.dialog({
-      modal: true,
-      show: 'fade',
-      hide: 'fade',
-      closeOnEscape: true,
-      position: position,
-      title: this.currentEvent.title,
-    });
-*/
     description = '<h2>' + this.currentEvent.title + '</h2><p>' + this.currentEvent.start.toUTCString() + '</p><p>'+ this.currentEvent.description + '</p>';
     $("div#description").html(description);
-  }
-
-  width = title.bounds.x + title.bounds.width + 1;
-
-  if (events.length > 1) {
-    var more = new paper.PointText(
-      new paper.Point(
-        width + 3,
-        offset + index * SCALE_SPACING + START_OFFSET
-      )
-    );
-
-    more.justification = 'left';
-    more.fillColor = 'green';
-    more.events = events;
-    timeline.children[index].addChild(title);
-    more.content = '(...)';
-    more.font = 'helvetica'
-    more.timeline = timeline;
-    more.descriptionTitle = descriptionTitle;
-    more.onMouseEnter = function(event) {
-      this.font = 'helvetica-bold'
-    }
-
-    more.onMouseLeave = function(event) {
-      this.font = 'helvetica'
-    }
-
-    more.onMouseDown = function (event) {
-      description = '<h2>Events on ' + this.descriptionTitle + '</h2><table>';
-      for (var i = 0; i < this.events.length; i++) {
-        description += '<tr><td>' + events[i].start.toUTCString() + '</td><td>' + events[i].title + '</td>';
-      }
-
-      description += "</table>";
-      $("div#description").html(description);
-    }
-
-    timeline.children[index].addChild(more);
-    title.more = more;
   }
 
   // TO add or not to add...
   addButtons(timeline, events, offset, index, title)
 
+  // If there aren't multiple events to show.
+  if (events.length == 1) {
+    return;
+  }
+
+  var more = new paper.PointText(
+    new paper.Point(
+      title.bounds.x + title.bounds.width + 4,,
+      offset + index * SCALE_SPACING + START_OFFSET
+    )
+  );
+
+  more.justification = 'left';
+  more.fillColor = 'green';
+  more.events = events;
+  more.content = '(...)';
+  more.font = 'helvetica'
+  more.timeline = timeline;
+  more.descriptionTitle = descriptionTitle;
+
+  more.onMouseEnter = function(event) {
+    this.font = 'helvetica-bold'
+  }
+
+  more.onMouseLeave = function(event) {
+    this.font = 'helvetica'
+  }
+
+  // Display a list of all events at that time.
+  more.onMouseDown = function (event) {
+    description = '<h2>Events on ' + this.descriptionTitle + '</h2><table>';
+    for (var i = 0; i < this.events.length; i++) {
+      description += '<tr><td>' + events[i].start.toUTCString() + '</td><td>' + events[i].title + '</td>';
+    }
+
+    description += "</table>";
+    $("div#description").html(description);
+  }
+
+  timeline.children[index].addChild(more);
+  title.more = more;
 }
 
 

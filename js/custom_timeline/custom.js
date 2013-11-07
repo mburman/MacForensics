@@ -98,89 +98,153 @@ function addButtons(timeline, events, offset, i, title) {
   timeline.addChild(buttonPrevious);
   timeline.children[i].addChild(buttonPrevious);
 
+  // Make buttons "unclickable" if there are no events to scroll through.
+  if (events.length < 2) {
+    buttonNext.fillColor = Colors.arrow.unclickable;
+    buttonPrevious.fillColor = Colors.arrow.unclickable;
+  }
+
   // Create a blob to hold this data so we can play with it.
   var displayData = new EventDisplayData(title.events, 0, title);
   buttonNext.data = displayData;
   buttonPrevious.data = displayData;
 
   buttonNext.onMouseDown = function(event) {
-    this.fillColor = Colors.arrow.onMouseDown;
+    if (this.data.events.length < 2) {
+      this.fillColor = Colors.arrow.unclickable;
+      return;
+    }
 
+    this.fillColor = Colors.arrow.onMouseDown;
+    // Display the next event.
+    this.data.eventDisplayedIndex++;
+    this.data.eventDisplayedIndex %= this.data.events.length;
+    this.data.textField.content = this.data.events[this.data.eventDisplayedIndex].title;
+    this.data.textField.currentEvent = this.data.events[this.data.eventDisplayedIndex];
     if (this.data.events.length > 1) {
-      // Display the next event.
-      this.data.eventDisplayedIndex++;
-      this.data.eventDisplayedIndex %= this.data.events.length;
-      this.data.textField.content = this.data.events[this.data.eventDisplayedIndex].title;
-      this.data.textField.currentEvent = this.data.events[this.data.eventDisplayedIndex];
+      this.data.textField.more.bounds.x = this.data.textField.bounds.x + this.data.textField.bounds.width + 3;
     }
   }
 
   buttonNext.onMouseUp = function(event) {
+    if (this.data.events.length < 2) {
+      this.fillColor = Colors.arrow.unclickable;
+      return;
+    }
+
     this.fillColor = Colors.arrow.default;
   }
 
   buttonNext.onMouseLeave = function(event) {
+    if (this.data.events.length < 2) {
+      this.fillColor = Colors.arrow.unclickable;
+      return;
+    }
     this.fillColor = Colors.arrow.default;
   }
 
 
   buttonPrevious.onMouseDown = function(event) {
+    if (this.data.events.length < 2) {
+      this.fillColor = Colors.arrow.unclickable;
+      return;
+    }
+
     this.fillColor = Colors.arrow.onMouseDown;
 
-    if (this.data.events.length > 1) {
-      // Display the previous event.
-      this.data.eventDisplayedIndex--;
-      this.data.eventDisplayedIndex %= this.data.events.length;
+    // Display the previous event.
+    this.data.eventDisplayedIndex--;
+    this.data.eventDisplayedIndex %= this.data.events.length;
 
-      // Index can become negative when scrolling backwards. If so, reset index.
-      if (this.data.eventDisplayedIndex < 0) {
-        this.data.eventDisplayedIndex = this.data.events.length - 1;
-      }
-      this.data.textField.content = this.data.events[this.data.eventDisplayedIndex].title;
-      this.data.textField.currentEvent = this.data.events[this.data.eventDisplayedIndex];
+    // Index can become negative when scrolling backwards. If so, reset index.
+    if (this.data.eventDisplayedIndex < 0) {
+      this.data.eventDisplayedIndex = this.data.events.length - 1;
     }
+    this.data.textField.content = this.data.events[this.data.eventDisplayedIndex].title;
+    this.data.textField.currentEvent = this.data.events[this.data.eventDisplayedIndex];
+    if (this.data.events.length > 1) {
+      this.data.textField.more.bounds.x = this.data.textField.bounds.x + this.data.textField.bounds.width + 3;
+    }
+
   }
 
   buttonPrevious.onMouseUp = function(event) {
+    if (this.data.events.length < 2) {
+      this.fillColor = Colors.arrow.unclickable;
+      return;
+    }
     this.fillColor = Colors.arrow.default;
   }
 
   buttonPrevious.onMouseLeave = function(event) {
+    if (this.data.events.length < 2) {
+      this.fillColor = Colors.arrow.unclickable;
+      return;
+    }
     this.fillColor = Colors.arrow.default;
   }
 }
 
-function drawEventList(timeline, events, i, SCALE_SPACING, offset) {
-  var title = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 + 50, offset + i * SCALE_SPACING + START_OFFSET));
+function drawEventList(timeline, events, index, SCALE_SPACING, offset) {
+  if (events.length < 1) {
+    return;
+  }
+
+  var width = TIMELINE_WIDTH / 2 + 50;
+  var title = new paper.PointText(
+    new paper.Point(
+      width,
+      offset + index * SCALE_SPACING + START_OFFSET
+    )
+  );
+
   title.justification = 'left';
   title.fillColor = 'black';
   title.events = events;
-  timeline.children[i].addChild(title);
+  timeline.children[index].addChild(title);
 
-  if (title.events.length > 0) {
-    title.content = title.events[0].title;
-    title.currentEvent = title.events[0];
+  title.content = events[0].title;
+  title.currentEvent = events[0];
 
-    title.onMouseDown = function(event) {
-      var NewDialog = $('<div id="Description">\<p>' + this.currentEvent.description + '</p>\</div>');
-      var position = [ 'center', 200];
+  title.justification = 'left';
+  title.onMouseDown = function(event) {
+    var NewDialog = $('<div id="Description">\<p>' + this.currentEvent.description + '</p>\</div>');
+    var position = [ 'center', 200];
 
-      NewDialog.dialog({
-        modal: true,
-        show: 'fade',
-        hide: 'fade',
-        closeOnEscape: true,
-        position: position,
-        title: this.currentEvent.title,
-      });
-    }
+    NewDialog.dialog({
+      modal: true,
+      show: 'fade',
+      hide: 'fade',
+      closeOnEscape: true,
+      position: position,
+      title: this.currentEvent.title,
+    });
   }
 
-  addButtons(timeline, title.events, offset, i, title)
+  width = title.bounds.x + title.bounds.width + 1;
 
-  if (title.events.length > 0) {
-    title.content = title.events[0].title;
+  if (events.length > 1) {
+    var more = new paper.PointText(
+      new paper.Point(
+        width + 3,
+        offset + index * SCALE_SPACING + START_OFFSET
+      )
+    );
+
+    more.justification = 'left';
+    more.fillColor = 'green';
+    more.events = events;
+    timeline.children[index].addChild(title);
+    more.content = '(...)';
+    more.font = 'helvetica-bold'
+
+    timeline.children[index].addChild(more);
+    title.more = more;
   }
+
+  // TO add or not to add...
+  addButtons(timeline, events, offset, index, title)
+
 }
 
 
@@ -409,7 +473,8 @@ var TimelineType = { month: 0, day: 1 };
 var Colors = {
   arrow: {
     default: '#009900',
-    onMouseDown: '#33CC66'
+    onMouseDown: '#33CC66',
+    unclickable: '#CEF6D8'
   },
   circle: {
     events: '#009900',

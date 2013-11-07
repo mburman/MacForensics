@@ -134,15 +134,7 @@ function addButtons(timeline, events, offset, i, title) {
 
     this.fillColor = Colors.arrow.default;
   }
-
-  buttonNext.onMouseLeave = function(event) {
-    if (this.data.events.length < 2) {
-      this.fillColor = Colors.arrow.unclickable;
-      return;
-    }
-    this.fillColor = Colors.arrow.default;
-  }
-
+  buttonNext.onMouseLeave = buttonNext.onMouseUp;
 
   buttonPrevious.onMouseDown = function(event) {
     if (this.data.events.length < 2) {
@@ -168,21 +160,8 @@ function addButtons(timeline, events, offset, i, title) {
 
   }
 
-  buttonPrevious.onMouseUp = function(event) {
-    if (this.data.events.length < 2) {
-      this.fillColor = Colors.arrow.unclickable;
-      return;
-    }
-    this.fillColor = Colors.arrow.default;
-  }
-
-  buttonPrevious.onMouseLeave = function(event) {
-    if (this.data.events.length < 2) {
-      this.fillColor = Colors.arrow.unclickable;
-      return;
-    }
-    this.fillColor = Colors.arrow.default;
-  }
+  buttonPrevious.onMouseUp = buttonNext.onMouseLeave;
+  buttonPrevious.onMouseLeave = buttonNext.onMouseLeave;
 }
 
 function drawEventList(timeline, events, index, SCALE_SPACING, offset) {
@@ -207,6 +186,7 @@ function drawEventList(timeline, events, index, SCALE_SPACING, offset) {
   title.currentEvent = events[0];
 
   title.justification = 'left';
+
   title.onMouseDown = function(event) {
     var NewDialog = $('<div id="Description">\<p>' + this.currentEvent.description + '</p>\</div>');
     var position = [ 'center', 200];
@@ -236,7 +216,16 @@ function drawEventList(timeline, events, index, SCALE_SPACING, offset) {
     more.events = events;
     timeline.children[index].addChild(title);
     more.content = '(...)';
-    more.font = 'helvetica-bold'
+    more.font = 'helvetica'
+
+    more.onMouseEnter = function(event) {
+      this.font = 'helvetica-bold'
+    }
+
+    more.onMouseLeave = function(event) {
+      this.font = 'helvetica'
+    }
+
 
     timeline.children[index].addChild(more);
     title.more = more;

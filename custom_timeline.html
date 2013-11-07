@@ -50,7 +50,8 @@
 
         var description = "<h2> No events to show </h2> <p> You did not add any events.</p>"
         if (events.length > 0) {
-          description = '<h2>' + events[0].title + '</h2><p>' + events[0].description + '</p>';
+          description = '<h2>' + events[0].title + '</h2><p>' +
+            events[0].start.toUTCString() + '</p><p>' + events[0].description + '</p>';
         }
         $("div#description").html(description);
 

@@ -212,7 +212,7 @@ function drawEventList(timeline, events, index, SCALE_SPACING, offset, descripti
       title: this.currentEvent.title,
     });
 */
-    description = '<h2>' + this.currentEvent.title + '</h2><p>' + this.currentEvent.description + '</p>';
+    description = '<h2>' + this.currentEvent.title + '</h2><p>' + this.currentEvent.start.toUTCString() + '</p><p>'+ this.currentEvent.description + '</p>';
     $("div#description").html(description);
   }
 

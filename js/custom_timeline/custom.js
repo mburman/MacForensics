@@ -44,6 +44,13 @@ function SizeTransform(object, width, height, undoTransform) {
   this.undoTransform = undoTransform;
 }
 
+function ContentTransform(object, newContent, oldContent, undoTransform) {
+  this.object = object;
+  this.newContent = newContent;
+  this.oldContent = oldContent;
+  this.undoTransform = undoTransform;
+}
+
 // Undoes translation along x and y.
 function undoTranslationTransform() {
   this.object.position.x -= this.x;
@@ -57,6 +64,10 @@ function undoExistenceTransform() {
 function undoSizeTransform() {
   this.object.height -= this.height;
   this.object.width -= this.width;
+}
+
+function undoContentTransform() {
+  this.object.content = this.oldContent;
 }
 
 // Holds all current transforms.
@@ -252,77 +263,98 @@ function drawTimeline(timelineItems, offset, timelineType) {
 
   // Draw month names.
   for (var i=0; i < timelineItems.length; i++) {
-    var text = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 - 20,  offset + i * SCALE_SPACING + START_OFFSET));
-    text.content = timelineItems[i].title;
-    text.events = timelineItems[i].events;
-    text.i = i;
-
-    text.style = {
-      fillColor: 'black',
-      justification: 'right'
-    };
-
-    text.onMouseEnter = function(event) {
-      this.fillColor = 'red';
-      this.fontSize = 13;
-    }
-
-    text.onMouseLeave = function(event) {
-      this.fillColor = 'black';
-      this.fontSize = 12;
-    }
-
-    text.onMouseDown = function(event) {
-      // TODO: gotta clean up... this is too messy.
-      var previousGroup = null;
-      if (currentTransforms.length > 0) {
-        previousGroup = currentTransforms[0].object;
-      }
-
-      // Undo all current transforms.
-      for (var j = 0; j < currentTransforms.length; j++) {
-        currentTransforms[j].undoTransform();
-      }
-      currentTransforms = new Array();
-
-      var month = this.events[0].start.getMonth();
-      var year = this.events[0].start.getFullYear();
-      translationAmount = daysInMonth(year, month);
-
-      // handle this group appropriately since this is being expanded.
-      var groupToMove = this.parent;
-
-      // If the same title is being clicked, don't redraw.
-      if ((previousGroup != null) && (groupToMove.id == previousGroup.id)) {
-        return;
-      }
-
-      // For now... dummy transform
-      transform = new Transform(groupToMove, 0, 0, undoTranslationTransform);
-      currentTransforms.push(transform);
-
-      // move all other groups down.
-      groupToMove = groupToMove.nextSibling;
-      while (groupToMove) {
-        transform = new Transform(groupToMove, 0, SCALE_SPACING * translationAmount, undoTranslationTransform);
-        currentTransforms.push(transform);
-
-        groupToMove.position.y += SCALE_SPACING * translationAmount;
-        groupToMove = groupToMove.nextSibling;
-      }
-
-      nextOffset = (this.i + 1) * SCALE_SPACING;
-
-      // TODO: Need to fix. Pass in a function and call that instead.
-      group = drawTimelineWithDayGranularity(this.events, nextOffset);
-      transform = new Transform(group, 0, 0, undoExistenceTransform);
-      currentTransforms.push(transform);
-    }
+    var text = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 - 30,  offset + i * SCALE_SPACING + START_OFFSET));
 
     // Group for each timeline item.
     var itemGroup = new paper.Group();
     itemGroup.addChild(text);
     timeline.addChild(itemGroup);
+
+    text.content = timelineItems[i].title;
+      text.style = {
+      fillColor: 'black',
+      justification: 'right'
+    };
+
+    if (timelineItems[i].events.length > 0) {
+      var expandSign = new paper.PointText(
+        new paper.Point(
+          text.bounds.x + text.bounds.width + 5,
+          offset + i * SCALE_SPACING + START_OFFSET
+        )
+      );
+      expandSign.style = {
+        fillColor: '#5882FA',
+        font: 'helvetica',
+        fontSize: 15
+      };
+      expandSign.content = "+";
+      expandSign.events = timelineItems[i].events;
+      expandSign.i = i;
+
+      itemGroup.addChild(expandSign);
+
+      expandSign.onMouseEnter = function(event) {
+        this.font = 'helvetica-bold';
+      };
+
+      expandSign.onMouseLeave = function(event) {
+        this.font = 'helvetica';
+      };
+
+      expandSign.onMouseDown = function(event) {
+        // TODO: gotta clean up... this is too messy.
+        var previousGroup = null;
+        if (currentTransforms.length > 0) {
+          previousGroup = currentTransforms[0].object;
+        }
+
+        // Undo all current transforms.
+        for (var j = 0; j < currentTransforms.length; j++) {
+          currentTransforms[j].undoTransform();
+        }
+        currentTransforms = new Array();
+
+        var month = this.events[0].start.getMonth();
+        var year = this.events[0].start.getFullYear();
+        translationAmount = daysInMonth(year, month);
+
+        // handle this group appropriately since this is being expanded.
+        var groupToMove = this.parent;
+
+        // If the same title is being clicked, don't redraw.
+        if ((previousGroup != null) && (groupToMove.id == previousGroup.id)) {
+          return;
+        }
+
+        // For now... dummy transform
+        transform = new Transform(groupToMove, 0, 0, undoTranslationTransform);
+        currentTransforms.push(transform);
+
+        // move all other groups down.
+        groupToMove = groupToMove.nextSibling;
+        while (groupToMove) {
+          transform = new Transform(groupToMove, 0, SCALE_SPACING * translationAmount, undoTranslationTransform);
+          currentTransforms.push(transform);
+
+          groupToMove.position.y += SCALE_SPACING * translationAmount;
+          groupToMove = groupToMove.nextSibling;
+        }
+
+        nextOffset = (this.i + 1) * SCALE_SPACING;
+
+        // TODO: Need to fix. Pass in a function and call that instead.
+        group = drawTimelineWithDayGranularity(this.events, nextOffset);
+        transform = new Transform(group, 0, 0, undoExistenceTransform);
+        currentTransforms.push(transform);
+
+        // Change + to -
+        this.content = '-';
+        var contentTransform = new ContentTransform(this, "-", "+", undoContentTransform);
+        currentTransforms.push(contentTransform);
+      }
+    }
+
 
     var path = new paper.Path();
     var start = new paper.Point(TIMELINE_WIDTH / 2,  offset + START_OFFSET / 2 + i * SCALE_SPACING);
@@ -339,9 +371,8 @@ function drawTimeline(timelineItems, offset, timelineType) {
     var circle = new paper.Path.Circle(new paper.Point(TIMELINE_WIDTH / 2,  offset + i * SCALE_SPACING + START_OFFSET), 2);
     circle.fillColor = Colors.timeline.circle;
 
-    timeline.children[i].addChild(path);
-    timeline.children[i].addChild(circle);
-
+    itemGroup.addChild(path);
+    itemGroup.addChild(circle);
 
     drawEventList(timeline, timelineItems[i].events, i, SCALE_SPACING, offset);
     //drawEventDots(text.events, i, SCALE_SPACING);

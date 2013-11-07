@@ -10,7 +10,7 @@ var TIMELINE_WIDTH = 1200;
 var EVENTS_OFFSET = 30;
 
 // Give each month n pixels.
-var SCALE_SPACING = 40;
+var SCALE_SPACING = 35;
 
 
 // TODO: FAR TOO MANY MAGIC NUMBERS. GET RID OF THEM!
@@ -284,7 +284,7 @@ function drawTimeline(timelineItems, offset, timelineType) {
         )
       );
       expandSign.style = {
-        fillColor: '#5882FA',
+        fillColor: Colors.timeline.expand,
         font: 'helvetica',
         fontSize: 15
       };
@@ -501,6 +501,7 @@ var Colors = {
   },
   timeline: {
     line: '#ff0000',
-    circle: 'white'
+    circle: 'white',
+    expand: '#2E2EFE'
   }
 };

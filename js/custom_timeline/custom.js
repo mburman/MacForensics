@@ -31,31 +31,16 @@ function TimelineItem(events, title) {
 
 // TODO: Rewrite these to one transform function... very bad style right now.
 // Indicates how a group was transformed(in this case in the x and y direction)
-function Transform(object, x, y, undoTransform) {
+function Transform(object, undoTransform, properties) {
   this.object = object;
-  this.x = x;
-  this.y = y;
   this.undoTransform = undoTransform;
-}
-
-function SizeTransform(object, width, height, undoTransform) {
-  this.object = object;
-  this.width = width;
-  this.height = height;
-  this.undoTransform = undoTransform;
-}
-
-function ContentTransform(object, newContent, oldContent, undoTransform) {
-  this.object = object;
-  this.newContent = newContent;
-  this.oldContent = oldContent;
-  this.undoTransform = undoTransform;
+  this.properties = properties;
 }
 
 // Undoes translation along x and y.
 function undoTranslationTransform() {
-  this.object.position.x -= this.x;
-  this.object.position.y -= this.y;
+  this.object.position.x -= this.properties['x'];
+  this.object.position.y -= this.properties['y'];
 }
 
 function undoExistenceTransform() {
@@ -63,12 +48,12 @@ function undoExistenceTransform() {
 }
 
 function undoSizeTransform() {
-  this.object.height -= this.height;
-  this.object.width -= this.width;
+  this.object.height -= this.properties['height'];
+  this.object.width -= this.properties['width'];
 }
 
 function undoContentTransform() {
-  this.object.content = this.oldContent;
+  this.object.content = this.properties['oldContent'];
 }
 
 // Holds all current transforms.
@@ -210,7 +195,7 @@ function drawEventList(timeline, events, index, SCALE_SPACING, offset, descripti
 
   var more = new paper.PointText(
     new paper.Point(
-      title.bounds.x + title.bounds.width + 4,,
+      title.bounds.x + title.bounds.width + 4,
       offset + index * SCALE_SPACING + START_OFFSET
     )
   );
@@ -327,13 +312,21 @@ function drawTimeline(timelineItems, offset, timelineType) {
         }
 
         // For now... dummy transform
-        transform = new Transform(groupToMove, 0, 0, undoTranslationTransform);
+        var properties = {
+          'x':0,
+          'y':0
+        }
+        transform = new Transform(groupToMove, undoTranslationTransform, properties);
         currentTransforms.push(transform);
 
         // move all other groups down.
         groupToMove = groupToMove.nextSibling;
         while (groupToMove) {
-          transform = new Transform(groupToMove, 0, SCALE_SPACING * translationAmount, undoTranslationTransform);
+          var properties = {
+            'x':0,
+            'y':SCALE_SPACING * translationAmount
+          }
+          transform = new Transform(groupToMove, undoTranslationTransform, properties);
           currentTransforms.push(transform);
 
           groupToMove.position.y += SCALE_SPACING * translationAmount;
@@ -344,12 +337,16 @@ function drawTimeline(timelineItems, offset, timelineType) {
 
         // TODO: Need to fix. Pass in a function and call that instead.
         group = drawTimelineWithDayGranularity(this.events, nextOffset);
-        transform = new Transform(group, 0, 0, undoExistenceTransform);
+        transform = new Transform(group, undoExistenceTransform, null);
         currentTransforms.push(transform);
 
         // Change + to -
         this.content = '-';
-        var contentTransform = new ContentTransform(this, "-", "+", undoContentTransform);
+        var properties = {
+          'newContent':'-',
+          'oldContent':'+'
+        }
+        var contentTransform = new Transform(this, undoContentTransform, properties);
         currentTransforms.push(contentTransform);
       }
     }
@@ -383,8 +380,12 @@ function drawTimeline(timelineItems, offset, timelineType) {
     paper.view.viewSize.height += canvas.height;
 
     // Create transforms - so we can undo them later.
-    canvasTransform = new SizeTransform(canvas, 0, timelineLength, undoSizeTransform);
-    viewTransform = new SizeTransform(paper.view.viewSize, 0, timelineLength, undoSizeTransform);
+    var properties = {
+      'width': 0,
+      'height': timelineLength
+    }
+    canvasTransform = new Transform(canvas, undoSizeTransform, properties);
+    viewTransform = new Transform(paper.view.viewSize, undoSizeTransform, properties);
     currentTransforms.push(canvasTransform);
     currentTransforms.push(viewTransform);
   } else {

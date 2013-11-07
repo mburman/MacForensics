@@ -1,0 +1,42 @@
+body,
+html {
+  margin:0;
+  padding:0;
+  color:#000;
+  background:white;
+}
+
+#wrap {
+  width: 1200px;
+  margin: 0 auto;
+  height: 100%;
+}
+
+#description {
+  float: right;
+  width: 550px;
+  height: 20%;
+  padding:20px 40px;
+  margin-top: 20px;
+  margin-left: 50px;
+  font-family: sans-serif;
+  font-size: 14;
+  background: #dddddd;
+  -moz-border-radius: 25px;
+  -webkit-border-radius: 25px;
+  border-radius: 25px;
+  border:2px solid #a1a1a1;
+}
+
+#myCanvas {
+  float: left;
+  width: 500px;
+}
+
+#footer {	
+  clear:both;
+  padding:5px 10px;
+  background:#cc9;
+}
+
+

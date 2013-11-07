@@ -5,7 +5,8 @@ var START_OFFSET = 50;
 var END_OFFSET = 50;
 
 // Width of the timeline.
-var TIMELINE_WIDTH = 1200;
+// TODO: couple this with CSS
+var TIMELINE_WIDTH = 500;
 
 var EVENTS_OFFSET = 30;
 
@@ -393,8 +394,8 @@ function drawTimeline(timelineItems, offset, timelineType) {
     paper.view.viewSize.height = canvas.height;
   }
 
-  canvas.width = TIMELINE_WIDTH;
-  paper.view.viewSize.width = canvas.width;
+//  canvas.width = TIMELINE_WIDTH;
+//  paper.view.viewSize.width = canvas.width;
 
 
   return timeline;

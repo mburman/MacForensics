@@ -13,7 +13,6 @@ var EVENTS_OFFSET = 30;
 // Give each month n pixels.
 var SCALE_SPACING = 35;
 
-
 // TODO: FAR TOO MANY MAGIC NUMBERS. GET RID OF THEM!
 //
 // Holds a list of eventsm index of the event being displayed and the field in
@@ -29,15 +28,14 @@ function TimelineItem(events, title) {
   this.title = title;
 }
 
-// TODO: Rewrite these to one transform function... very bad style right now.
-// Indicates how a group was transformed(in this case in the x and y direction)
+// Indicates how an object was transformed.
+// undoTransform is a function to undo the transform.
 function Transform(object, undoTransform, properties) {
   this.object = object;
   this.undoTransform = undoTransform;
   this.properties = properties;
 }
 
-// Undoes translation along x and y.
 function undoTranslationTransform() {
   this.object.position.x -= this.properties['x'];
   this.object.position.y -= this.properties['y'];
@@ -392,10 +390,6 @@ function drawTimeline(timelineItems, offset, timelineType) {
     canvas.height = timelineLength + START_OFFSET + END_OFFSET;
     paper.view.viewSize.height = canvas.height;
   }
-
-//  canvas.width = TIMELINE_WIDTH;
-//  paper.view.viewSize.width = canvas.width;
-
 
   return timeline;
 

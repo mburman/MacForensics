@@ -17,12 +17,11 @@ table {
 }
 
 #description {
-  float: right;
   width: 500px;
   height: 300px;
   padding:10px 40px;
   margin-top: 20px;
-  margin-left: 50px;
+  margin-left: 550px;
   font-family: sans-serif;
   font-size: 12;
   background: #dddddd;
@@ -31,9 +30,9 @@ table {
   border-radius: 25px;
   border:2px solid #a1a1a1;
   overflow: auto;
+  position: fixed;
 }
 
 #myCanvas {
-  float: left;
   width: 550px;
 }

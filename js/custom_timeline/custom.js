@@ -200,7 +200,7 @@ function drawEventList(timeline, events, index, SCALE_SPACING, offset) {
   title.justification = 'left';
 
   title.onMouseDown = function(event) {
-    var NewDialog = $('<div id="Description">\<p>' + this.currentEvent.description + '</p>\</div>');
+/*    var NewDialog = $('<div id="Description">\<p>' + this.currentEvent.description + '</p>\</div>');
     var position = [ 'center', 200];
 
     NewDialog.dialog({
@@ -211,6 +211,9 @@ function drawEventList(timeline, events, index, SCALE_SPACING, offset) {
       position: position,
       title: this.currentEvent.title,
     });
+*/
+    description = '<h2>' + this.currentEvent.title + '</h2><p>' + this.currentEvent.description + '</p>';
+    $("div#description").html(description);
   }
 
   width = title.bounds.x + title.bounds.width + 1;

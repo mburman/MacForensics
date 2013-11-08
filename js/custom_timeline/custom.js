@@ -224,7 +224,7 @@ function drawEventList(timeline, events, index, SCALE_SPACING, offset, descripti
 
 
 // Draws the timeline.
-function drawTimeline(timelineItems, offset, timelineType) {
+function drawTimeline(timelineItems, offset, timelineType, expandMethod) {
   // Length of the current timeline.
   var timelineLength = timelineItems.length * SCALE_SPACING;
 
@@ -341,8 +341,7 @@ function drawTimeline(timelineItems, offset, timelineType) {
 
         nextOffset = (this.i + 1) * SCALE_SPACING;
 
-        // TODO: Need to fix. Pass in a function and call that instead.
-        group = drawTimelineWithDayGranularity(this.events, nextOffset);
+        group = expandMethod(this.events, nextOffset);
         transform = new Transform(group, undoExistenceTransform, null);
         currentTransforms.push(transform);
 
@@ -405,6 +404,10 @@ function drawTimeline(timelineItems, offset, timelineType) {
 //  paper.view.draw();
 }
 
+// TODO
+function drawTimelineWithHourGranularity(sortedEvents, offset) {
+}
+
 // NOTE: For now, the events must be of the same month.
 function drawTimelineWithDayGranularity(sortedEvents, offset) {
   events = sortedEvents;
@@ -426,7 +429,7 @@ function drawTimelineWithDayGranularity(sortedEvents, offset) {
     var descriptionTitle = createDescriptionTitle(
       sortedEvents[0].start.getFullYear(),
       sortedEvents[0].start.getMonth(),
-      i
+      (i + 1)
     );
 
     timelineItem = new TimelineItem(
@@ -437,7 +440,7 @@ function drawTimelineWithDayGranularity(sortedEvents, offset) {
     timelineItems.push(timelineItem);
   }
 
-  return drawTimeline(timelineItems, offset, TimelineType.day);
+  return drawTimeline(timelineItems, offset, TimelineType.day, drawTimelineWithHourGranularity);
 }
 
 function drawTimelineWithMonthGranularity(sortedEvents, offset) {
@@ -471,7 +474,25 @@ function drawTimelineWithMonthGranularity(sortedEvents, offset) {
     timelineItems.push(timelineItem);
   }
 
-  drawTimeline(timelineItems, 0, TimelineType.month);
+  drawTimeline(timelineItems, 0, TimelineType.month, drawTimelineWithDayGranularity);
+}
+
+// Creates a title for the event description box.
+function createDescriptionTitle(year, month, day, hour) {
+  var title = '';
+  if (year != undefined) {
+    title = year + title;
+  }
+  if (month != undefined) {
+    title = monthNames[month] + ' ' + title;
+  }
+  if (day != undefined) {
+    title = day + ' ' + title;
+  }
+  if (hour != undefined) {
+    title = title + " at " + hour;
+  }
+  return title;
 }
 
 // TODO: Fix... this is a bad way of doing it.
@@ -485,20 +506,6 @@ function getEventsInYearAndMonthAndDate(events, year, month, date) {
     }
   }
   return filteredEvents;
-}
-
-function createDescriptionTitle(year, month, day) {
-  var title = '';
-  if (year != undefined) {
-    title = year + title;
-  }
-  if (month != undefined) {
-    title = monthNames[month] + ' ' + title;
-  }
-  if (day != undefined) {
-    title = day + ' ' + title;
-  }
-  return title;
 }
 
 function getEventsInYearAndMonth(events, year, month) {

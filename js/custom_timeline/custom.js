@@ -311,6 +311,7 @@ function expandMonth(object) {
     dayTransforms[j].undoTransform();
   }
   currentTransforms = new Array();
+  dayTransforms = new Array();
 
   var month = object.events[0].start.getMonth();
   var year = object.events[0].start.getFullYear();

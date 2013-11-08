@@ -222,7 +222,7 @@ function drawEventList(timeline, events, index, SCALE_SPACING, offset, descripti
   title.more = more;
 }
 
-function expandMonth(object, expandMethod) {
+function expandMonth(object) {
   // TODO: gotta clean up... this is too messy.
   var previousGroup = null;
   if (currentTransforms.length > 0) {
@@ -409,6 +409,35 @@ function drawTimeline(timelineItems, offset, timelineType, expandMethod) {
 
 // TODO
 function drawTimelineWithHourGranularity(sortedEvents, offset) {
+  events = sortedEvents;
+  numHours = 24;
+  timelineItems = new Array();
+  for (var i=0; i < numHours; i++) {
+    filteredEvents = getEventsInTime(
+      events,
+      events[0].start.getFullYear(),
+      events[0].start.getMonth(),
+      events[0].start.getDate(),
+      i // hour
+    );
+
+    itemTitle = i + ":00";
+    var descriptionTitle = createDescriptionTitle(
+      events[0].start.getFullYear(),
+      events[0].start.getMonth(),
+      events[0].start.getDate(),
+      i
+    );
+
+    timelineItem = new TimelineItem(
+      filteredEvents,
+      itemTitle,
+      descriptionTitle
+    );
+    timelineItems.push(timelineItem);
+  }
+
+  return drawTimeline(timelineItems, offset, TimelineType.hour);
 }
 
 // NOTE: For now, the events must be of the same month.
@@ -560,7 +589,7 @@ var monthNames = [
   "July", "August", "September", "October", "November", "December"
 ];
 
-var TimelineType = { month: 0, day: 1 };
+var TimelineType = { month: 0, day: 1, hour:2 };
 var Colors = {
   arrow: {
     default: '#009900',

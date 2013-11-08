@@ -180,7 +180,7 @@ function drawEventList(timeline, events, index, SCALE_SPACING, offset, descripti
 
   title.onMouseDown = function(event) {
     description = '<h2>' + this.currentEvent.title + '</h2><p>' + this.currentEvent.start.toUTCString() + '</p><p>'+ this.currentEvent.description + '</p>';
-    $("div#description").html(description);
+    $("div#description2").html(description);
   }
 
   // TO add or not to add...
@@ -496,6 +496,6 @@ var Colors = {
   timeline: {
     line: '#ff0000',
     circle: 'white',
-    expand: '#2E2EFE'
+    expand: '#234'
   }
 };

@@ -48,11 +48,31 @@
           }
         );
 
-        var description = "<h2> No events to show </h2> <p> You did not add any events.</p>"
-        if (events.length > 0) {
-          description = '<h2>' + events[0].title + '</h2><p>' +
-            events[0].start.toUTCString() + '</p><p>' + events[0].description + '</p>';
+
+        if (events.length == 0) {
+          var description = "<h2> No events to show </h2> <p> You did not add any events.</p>"
+          $("div#description").html(description);
+          return;
         }
+
+        description = '<h2>' + events[0].title + '</h2><p>' +
+        events[0].start.toUTCString() + '</p><p>' + events[0].description + '</p>';
+        $("div#description2").html(description);
+
+        var eventsInFirstMonth = getEventsInYearAndMonth(
+          events,
+          events[0].start.getFullYear(),
+          events[0].start.getMonth()
+        );
+
+        description = '<h2>Events on ' + monthNames[events[0].start.getMonth()]
+          + " " + events[0].start.getFullYear() + '</h2><table>';
+        for (var i = 0; i < eventsInFirstMonth.length; i++) {
+          description += '<tr><td>' +
+              eventsInFirstMonth[i].start.toUTCString() +
+              '</td><td>' +  eventsInFirstMonth[i].title + '</td>';
+        }
+        description += "</table>";
         $("div#description").html(description);
 
         // Draw the timeline.
@@ -64,7 +84,9 @@
 
   <body>
     <div id="wrap">
-      <div id="description"> </div>
+      <div id="slide"></div>
+      <div id="description"></div>
+      <div id="description2"></div>
       <canvas id="myCanvas" />
     </div>
   </body>

@@ -374,10 +374,10 @@ function drawTimeline(timelineItems, offset, timelineType) {
       )
     );
     path.strokeColor = Colors.timeline.line;
-    path.strokeWidth = 10;
+    path.strokeWidth = 2;
     path.strokeCap = 'round';
 
-    var circle = new paper.Path.Circle(new paper.Point(TIMELINE_WIDTH / 2,  offset + i * SCALE_SPACING + START_OFFSET), 2);
+    var circle = new paper.Path.Circle(new paper.Point(TIMELINE_WIDTH / 2,  offset + i * SCALE_SPACING + START_OFFSET), 5);
     circle.fillColor = Colors.timeline.circle;
 
     itemGroup.addChild(path);
@@ -517,7 +517,7 @@ var Colors = {
   },
   timeline: {
     line: '#ff0000',
-    circle: 'white',
+    circle: 'red',
     expand: '#234'
   }
 };

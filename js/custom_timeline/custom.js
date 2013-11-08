@@ -58,30 +58,6 @@ function undoContentTransform() {
 // Holds all current transforms.
 var currentTransforms = new Array();
 
-// Display events as dots instead of in a text field.
-function drawEventDots(events, index, SCALE_SPACING) {
-  if (events.length == 0) {
-    return;
-  }
-
-  var widthSpacing = 10;
-  for (j = 0; j < events.length; j++) {
-   var eventDate = new XDate(events[j].start);
-    eventDay = eventDate.getDate() // returns 1 - 31
-    daysInEventMonth = daysInMonth(eventDate.getMonth(),eventDate.getFullYear());
-
-    offset = eventDay / daysInEventMonth;
-
-    var point = new paper.Point(
-      TIMELINE_WIDTH / 2 + j * widthSpacing + EVENTS_OFFSET,
-      (index + offset) * SCALE_SPACING + START_OFFSET
-    );
-
-    var circle = new paper.Path.Circle(point, 3);
-    circle.fillColor = Colors.circle.events;
-  }
-}
-
 function addButtons(timeline, events, offset, i, title) {
   var buttonNext = new paper.Path.RegularPolygon(new paper.Point(TIMELINE_WIDTH / 2 + 35, offset + i * SCALE_SPACING + START_OFFSET), 3, 7);
   buttonNext.fillColor = Colors.arrow.default;
@@ -447,10 +423,16 @@ function drawTimelineWithDayGranularity(sortedEvents, offset) {
     );
 
     itemTitle = (i + 1); // title is just the day number
+    var descriptionTitle = createDescriptionTitle(
+      sortedEvents[0].start.getFullYear(),
+      sortedEvents[0].start.getMonth(),
+      i
+    );
+
     timelineItem = new TimelineItem(
       filteredEvents,
       itemTitle,
-      i + " " + monthNames[sortedEvents[0].start.getMonth()] + " " + sortedEvents[0].start.getFullYear() // title of the description
+      descriptionTitle
     );
     timelineItems.push(timelineItem);
   }
@@ -473,10 +455,11 @@ function drawTimelineWithMonthGranularity(sortedEvents, offset) {
     var monthNumber = ((startMonth -1) + i) % 12;
     var yearNumber = startYear + Math.floor(((startMonth - 1) + i) / 12);
 
+    var descriptionTitle = createDescriptionTitle(yearNumber, monthNumber);
     timelineItem = new TimelineItem(
       getEventsInYearAndMonth(events, yearNumber, monthNumber), // events in this item
       (monthNames[monthNumber]), // title of this item
-      (monthNames[monthNumber] + ' ' + yearNumber) // title of the description area
+      descriptionTitle // title of the description area
     );
 
     if (i == 0) {
@@ -502,6 +485,20 @@ function getEventsInYearAndMonthAndDate(events, year, month, date) {
     }
   }
   return filteredEvents;
+}
+
+function createDescriptionTitle(year, month, day) {
+  var title = '';
+  if (year != undefined) {
+    title = year + title;
+  }
+  if (month != undefined) {
+    title = monthNames[month] + ' ' + title;
+  }
+  if (day != undefined) {
+    title = day + ' ' + title;
+  }
+  return title;
 }
 
 function getEventsInYearAndMonth(events, year, month) {

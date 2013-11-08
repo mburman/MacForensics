@@ -222,6 +222,80 @@ function drawEventList(timeline, events, index, SCALE_SPACING, offset, descripti
   title.more = more;
 }
 
+var dayTransforms = Array();
+
+function expandDay(object) {
+  var previousGroup = null;
+  if (dayTransforms.length > 0) {
+    previousGroup = dayTransforms[0].object;
+  }
+
+  // Undo day transforms.
+  for (var j = 0; j < dayTransforms.length; j++) {
+    dayTransforms[j].undoTransform();
+  }
+  dayTransforms = new Array();
+
+  translationAmount = 24; // 24 hours in a day.
+  var groupToMove = object.parent;
+
+  // If the same title is being clicked, don't redraw.
+  if ((previousGroup != null) && (groupToMove.id == previousGroup.id)) {
+    return;
+  }
+
+  // For now... dummy transform
+  var properties = {
+    'x':0,
+    'y':0
+  }
+  transform = new Transform(groupToMove, undoTranslationTransform, properties);
+  dayTransforms.push(transform);
+
+  // move all other groups down.
+  groupToMove = groupToMove.nextSibling;
+  while (groupToMove) {
+    var properties = {
+      'x':0,
+      'y':SCALE_SPACING * translationAmount
+    }
+    transform = new Transform(groupToMove, undoTranslationTransform, properties);
+    dayTransforms.push(transform);
+
+    groupToMove.position.y += SCALE_SPACING * translationAmount;
+    groupToMove = groupToMove.nextSibling;
+  }
+
+  // move the months down.
+  groupToMove = object.parentGroup.nextSibling;
+  while (groupToMove) {
+    var properties = {
+      'x':0,
+      'y':SCALE_SPACING * translationAmount
+    }
+    transform = new Transform(groupToMove, undoTranslationTransform, properties);
+    dayTransforms.push(transform);
+
+    groupToMove.position.y += SCALE_SPACING * translationAmount;
+    groupToMove = groupToMove.nextSibling;
+  }
+
+  //nextOffset = (object.i + 1) * SCALE_SPACING;
+  nextOffset = object.position.y;
+  group = object.expandMethod(object.events, nextOffset);
+  transform = new Transform(group, undoExistenceTransform, null);
+  dayTransforms.push(transform);
+
+  // Change + to -
+  object.content = '-';
+  var properties = {
+    'newContent':'-',
+    'oldContent':'+'
+  }
+  var contentTransform = new Transform(object, undoContentTransform, properties);
+  dayTransforms.push(contentTransform);
+}
+
 function expandMonth(object) {
   // TODO: gotta clean up... this is too messy.
   var previousGroup = null;
@@ -233,6 +307,9 @@ function expandMonth(object) {
   for (var j = 0; j < currentTransforms.length; j++) {
     currentTransforms[j].undoTransform();
   }
+  for (var j = 0; j < dayTransforms.length; j++) {
+    dayTransforms[j].undoTransform();
+  }
   currentTransforms = new Array();
 
   var month = object.events[0].start.getMonth();
@@ -241,7 +318,7 @@ function expandMonth(object) {
 
   // handle this group appropriately since this is being expanded.
   var groupToMove = object.parent;
-
+  var groupClicked = groupToMove;
   // If the same title is being clicked, don't redraw.
   if ((previousGroup != null) && (groupToMove.id == previousGroup.id)) {
     return;
@@ -269,9 +346,8 @@ function expandMonth(object) {
     groupToMove = groupToMove.nextSibling;
   }
 
-  nextOffset = (object.i + 1) * SCALE_SPACING;
-
-  group = object.expandMethod(object.events, nextOffset);
+  nextOffset = object.position.y;
+  group = object.expandMethod(object.events, nextOffset, groupClicked);
   transform = new Transform(group, undoExistenceTransform, null);
   currentTransforms.push(transform);
 
@@ -287,7 +363,7 @@ function expandMonth(object) {
 
 
 // Draws the timeline.
-function drawTimeline(timelineItems, offset, timelineType, expandMethod) {
+function drawTimeline(timelineItems, offset, timelineType, expandMethod, parentGroup) {
   // Length of the current timeline.
   var timelineLength = timelineItems.length * SCALE_SPACING;
 
@@ -299,7 +375,7 @@ function drawTimeline(timelineItems, offset, timelineType, expandMethod) {
 
   var timeline = new paper.Group();
 
-  // Draw month names.
+  // Draw scale names.
   for (var i=0; i < timelineItems.length; i++) {
     var text = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 - 30,  offset + i * SCALE_SPACING + START_OFFSET));
 
@@ -345,6 +421,8 @@ function drawTimeline(timelineItems, offset, timelineType, expandMethod) {
       expandSign.events = timelineItems[i].events;
       expandSign.i = i;
       expandSign.expandMethod = expandMethod;
+      expandSign.timelineType = timelineType;
+      expandSign.parentGroup = parentGroup;
       itemGroup.addChild(expandSign);
 
       expandSign.onMouseEnter = function(event) {
@@ -356,7 +434,11 @@ function drawTimeline(timelineItems, offset, timelineType, expandMethod) {
       };
 
       expandSign.onMouseDown = function(event) {
-        expandMonth(this);
+        if (this.timelineType == TimelineType.month) {
+          expandMonth(this);
+        } else if (this.timelineType == TimelineType.day) {
+          expandDay(this);
+        }
       }
     }
 
@@ -383,7 +465,7 @@ function drawTimeline(timelineItems, offset, timelineType, expandMethod) {
   }
 
   // Adjust canvas to appropriate size.
-  if (timelineType == TimelineType.day) {
+  if (timelineType == TimelineType.day || timelineType == TimelineType.hour) {
     canvas.height += timelineLength;
     paper.view.viewSize.height += canvas.height;
 
@@ -394,8 +476,14 @@ function drawTimeline(timelineItems, offset, timelineType, expandMethod) {
     }
     canvasTransform = new Transform(canvas, undoSizeTransform, properties);
     viewTransform = new Transform(paper.view.viewSize, undoSizeTransform, properties);
-    currentTransforms.push(canvasTransform);
-    currentTransforms.push(viewTransform);
+
+    if (timelineType == TimelineType.day) {
+      currentTransforms.push(canvasTransform);
+      currentTransforms.push(viewTransform);
+    } else {
+      dayTransforms.push(canvasTransform);
+      dayTransforms.push(viewTransform);
+    }
   } else {
     canvas.height = timelineLength + START_OFFSET + END_OFFSET;
     paper.view.viewSize.height = canvas.height;
@@ -441,7 +529,8 @@ function drawTimelineWithHourGranularity(sortedEvents, offset) {
 }
 
 // NOTE: For now, the events must be of the same month.
-function drawTimelineWithDayGranularity(sortedEvents, offset) {
+// parentGroup - month group this belongs to.
+function drawTimelineWithDayGranularity(sortedEvents, offset, parentGroup) {
   events = sortedEvents;
   numDays = daysInMonth(
     sortedEvents[0].start.getFullYear(),
@@ -472,7 +561,7 @@ function drawTimelineWithDayGranularity(sortedEvents, offset) {
     timelineItems.push(timelineItem);
   }
 
-  return drawTimeline(timelineItems, offset, TimelineType.day, drawTimelineWithHourGranularity);
+  return drawTimeline(timelineItems, offset, TimelineType.day, drawTimelineWithHourGranularity, parentGroup);
 }
 
 function drawTimelineWithMonthGranularity(sortedEvents, offset) {

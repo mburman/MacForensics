@@ -11,7 +11,7 @@ var TIMELINE_WIDTH = 500;
 var EVENTS_OFFSET = 30;
 
 // Give each month n pixels.
-var SCALE_SPACING = 35;
+var SCALE_SPACING = 40;
 
 // TODO: FAR TOO MANY MAGIC NUMBERS. GET RID OF THEM!
 //
@@ -88,7 +88,7 @@ function addButtons(timeline, events, offset, i, title) {
   timeline.children[i].addChild(buttonNext);
 
   var buttonPrevious = new paper.Path.RegularPolygon(new paper.Point(TIMELINE_WIDTH / 2 + 20, offset + i * SCALE_SPACING + START_OFFSET), 3, 7);
-  buttonPrevious.fillColor = Colors.arrow.default;
+  buttonPrevious.fillColor = Colors.arrow.unclickable;
   buttonPrevious.rotate(-90);
   timeline.addChild(buttonPrevious);
   timeline.children[i].addChild(buttonPrevious);
@@ -96,24 +96,28 @@ function addButtons(timeline, events, offset, i, title) {
   // Make buttons "unclickable" if there are no events to scroll through.
   if (events.length < 2) {
     buttonNext.fillColor = Colors.arrow.unclickable;
-    buttonPrevious.fillColor = Colors.arrow.unclickable;
   }
 
   // Create a blob to hold this data so we can play with it.
   var displayData = new EventDisplayData(title.events, 0, title);
   buttonNext.data = displayData;
   buttonPrevious.data = displayData;
+  buttonNext.previous = buttonPrevious;
+  buttonPrevious.next = buttonNext;
 
   buttonNext.onMouseDown = function(event) {
-    if (this.data.events.length < 2) {
-      this.fillColor = Colors.arrow.unclickable;
+    if (this.data.eventDisplayedIndex == (this.data.events.length-1)) {
       return;
     }
 
     this.fillColor = Colors.arrow.onMouseDown;
+
     // Display the next event.
     this.data.eventDisplayedIndex++;
-    this.data.eventDisplayedIndex %= this.data.events.length;
+    this.previous.fillColor = Colors.arrow.default;
+    if (this.data.eventDisplayedIndex == this.data.events.length - 1) {
+      this.fillColor = Colors.arrow.unclickable;
+    }
     this.data.textField.content = this.data.events[this.data.eventDisplayedIndex].title;
     this.data.textField.currentEvent = this.data.events[this.data.eventDisplayedIndex];
     if (this.data.events.length > 1) {
@@ -122,18 +126,23 @@ function addButtons(timeline, events, offset, i, title) {
   }
 
   buttonNext.onMouseUp = function(event) {
-    if (this.data.events.length < 2) {
+    if (this.data.eventDisplayedIndex == this.data.events.length-1) {
       this.fillColor = Colors.arrow.unclickable;
       return;
     }
-
     this.fillColor = Colors.arrow.default;
   }
-  buttonNext.onMouseLeave = buttonNext.onMouseUp;
+
+  buttonNext.onMouseLeave = function(event) {
+    if (this.data.eventDisplayedIndex == this.data.events.length-1) {
+      this.fillColor = Colors.arrow.unclickable;
+      return;
+    }
+    this.fillColor = Colors.arrow.default;
+  }
 
   buttonPrevious.onMouseDown = function(event) {
-    if (this.data.events.length < 2) {
-      this.fillColor = Colors.arrow.unclickable;
+    if (this.data.eventDisplayedIndex == 0) {
       return;
     }
 
@@ -141,22 +150,29 @@ function addButtons(timeline, events, offset, i, title) {
 
     // Display the previous event.
     this.data.eventDisplayedIndex--;
-    this.data.eventDisplayedIndex %= this.data.events.length;
-
-    // Index can become negative when scrolling backwards. If so, reset index.
-    if (this.data.eventDisplayedIndex < 0) {
-      this.data.eventDisplayedIndex = this.data.events.length - 1;
-    }
+    this.next.fillColor = Colors.arrow.default;
     this.data.textField.content = this.data.events[this.data.eventDisplayedIndex].title;
     this.data.textField.currentEvent = this.data.events[this.data.eventDisplayedIndex];
     if (this.data.events.length > 1) {
       this.data.textField.more.bounds.x = this.data.textField.bounds.x + this.data.textField.bounds.width + 3;
     }
-
   }
 
-  buttonPrevious.onMouseUp = buttonNext.onMouseLeave;
-  buttonPrevious.onMouseLeave = buttonNext.onMouseLeave;
+  buttonPrevious.onMouseUp = function(event) {
+    if (this.data.eventDisplayedIndex == 0) {
+      this.fillColor = Colors.arrow.unclickable;
+      return;
+    }
+    this.fillColor = Colors.arrow.default;
+  }
+
+  buttonPrevious.onMouseLeave = function(event) {
+    if (this.data.eventDisplayedIndex == 0) {
+      this.fillColor = Colors.arrow.unclickable;
+      return;
+    }
+    this.fillColor = Colors.arrow.default;
+  }
 }
 
 function drawEventList(timeline, events, index, SCALE_SPACING, offset, descriptionTitle) {

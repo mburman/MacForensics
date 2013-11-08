@@ -406,7 +406,7 @@ function drawTimeline(timelineItems, offset, timelineType, expandMethod, parentG
       justification: 'right'
     };
 
-    if (timelineItems[i].events.length > 0) {
+    if (timelineItems[i].events.length > 0 && timelineType != TimelineType.hour) {
       var expandSign = new paper.PointText(
         new paper.Point(
           text.bounds.x + text.bounds.width + 5,

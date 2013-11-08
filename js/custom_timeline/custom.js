@@ -222,6 +222,69 @@ function drawEventList(timeline, events, index, SCALE_SPACING, offset, descripti
   title.more = more;
 }
 
+function expandMonth(object, expandMethod) {
+  // TODO: gotta clean up... this is too messy.
+  var previousGroup = null;
+  if (currentTransforms.length > 0) {
+    previousGroup = currentTransforms[0].object;
+  }
+
+  // Undo all current transforms.
+  for (var j = 0; j < currentTransforms.length; j++) {
+    currentTransforms[j].undoTransform();
+  }
+  currentTransforms = new Array();
+
+  var month = object.events[0].start.getMonth();
+  var year = object.events[0].start.getFullYear();
+  translationAmount = daysInMonth(year, month);
+
+  // handle this group appropriately since this is being expanded.
+  var groupToMove = object.parent;
+
+  // If the same title is being clicked, don't redraw.
+  if ((previousGroup != null) && (groupToMove.id == previousGroup.id)) {
+    return;
+  }
+
+  // For now... dummy transform
+  var properties = {
+    'x':0,
+    'y':0
+  }
+  transform = new Transform(groupToMove, undoTranslationTransform, properties);
+  currentTransforms.push(transform);
+
+  // move all other groups down.
+  groupToMove = groupToMove.nextSibling;
+  while (groupToMove) {
+    var properties = {
+      'x':0,
+      'y':SCALE_SPACING * translationAmount
+    }
+    transform = new Transform(groupToMove, undoTranslationTransform, properties);
+    currentTransforms.push(transform);
+
+    groupToMove.position.y += SCALE_SPACING * translationAmount;
+    groupToMove = groupToMove.nextSibling;
+  }
+
+  nextOffset = (object.i + 1) * SCALE_SPACING;
+
+  group = object.expandMethod(object.events, nextOffset);
+  transform = new Transform(group, undoExistenceTransform, null);
+  currentTransforms.push(transform);
+
+  // Change + to -
+  object.content = '-';
+  var properties = {
+    'newContent':'-',
+    'oldContent':'+'
+  }
+  var contentTransform = new Transform(object, undoContentTransform, properties);
+  currentTransforms.push(contentTransform);
+}
+
 
 // Draws the timeline.
 function drawTimeline(timelineItems, offset, timelineType, expandMethod) {
@@ -281,7 +344,7 @@ function drawTimeline(timelineItems, offset, timelineType, expandMethod) {
       expandSign.content = "+";
       expandSign.events = timelineItems[i].events;
       expandSign.i = i;
-
+      expandSign.expandMethod = expandMethod;
       itemGroup.addChild(expandSign);
 
       expandSign.onMouseEnter = function(event) {
@@ -293,66 +356,7 @@ function drawTimeline(timelineItems, offset, timelineType, expandMethod) {
       };
 
       expandSign.onMouseDown = function(event) {
-        // TODO: gotta clean up... this is too messy.
-        var previousGroup = null;
-        if (currentTransforms.length > 0) {
-          previousGroup = currentTransforms[0].object;
-        }
-
-        // Undo all current transforms.
-        for (var j = 0; j < currentTransforms.length; j++) {
-          currentTransforms[j].undoTransform();
-        }
-        currentTransforms = new Array();
-
-        var month = this.events[0].start.getMonth();
-        var year = this.events[0].start.getFullYear();
-        translationAmount = daysInMonth(year, month);
-
-        // handle this group appropriately since this is being expanded.
-        var groupToMove = this.parent;
-
-        // If the same title is being clicked, don't redraw.
-        if ((previousGroup != null) && (groupToMove.id == previousGroup.id)) {
-          return;
-        }
-
-        // For now... dummy transform
-        var properties = {
-          'x':0,
-          'y':0
-        }
-        transform = new Transform(groupToMove, undoTranslationTransform, properties);
-        currentTransforms.push(transform);
-
-        // move all other groups down.
-        groupToMove = groupToMove.nextSibling;
-        while (groupToMove) {
-          var properties = {
-            'x':0,
-            'y':SCALE_SPACING * translationAmount
-          }
-          transform = new Transform(groupToMove, undoTranslationTransform, properties);
-          currentTransforms.push(transform);
-
-          groupToMove.position.y += SCALE_SPACING * translationAmount;
-          groupToMove = groupToMove.nextSibling;
-        }
-
-        nextOffset = (this.i + 1) * SCALE_SPACING;
-
-        group = expandMethod(this.events, nextOffset);
-        transform = new Transform(group, undoExistenceTransform, null);
-        currentTransforms.push(transform);
-
-        // Change + to -
-        this.content = '-';
-        var properties = {
-          'newContent':'-',
-          'oldContent':'+'
-        }
-        var contentTransform = new Transform(this, undoContentTransform, properties);
-        currentTransforms.push(contentTransform);
+        expandMonth(this);
       }
     }
 
@@ -376,7 +380,6 @@ function drawTimeline(timelineItems, offset, timelineType, expandMethod) {
     itemGroup.addChild(circle);
 
     drawEventList(timeline, timelineItems[i].events, i, SCALE_SPACING, offset, timelineItems[i].descriptionTitle);
-    //drawEventDots(text.events, i, SCALE_SPACING);
   }
 
   // Adjust canvas to appropriate size.

@@ -252,9 +252,24 @@ function drawTimeline(timelineItems, offset, timelineType) {
     itemGroup.addChild(text);
     timeline.addChild(itemGroup);
 
+    var titleText = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 - 130,  offset + i * SCALE_SPACING + START_OFFSET + 5));
+    titleText.content = '-';
+    titleText.style = {
+      fillColor: '#dddddd',
+      justification: 'center',
+      fontSize: 30
+    };
+
+    if (timelineItems[i].titleText != undefined) {
+      titleText.content = timelineItems[i].titleText;
+      titleText.fillColor = '#bbbbbb';
+    }
+
+    itemGroup.addChild(titleText);
+
     text.content = timelineItems[i].title;
       text.style = {
-      fillColor: 'black',
+      fillColor: '#444444',
       justification: 'right'
     };
 
@@ -442,8 +457,15 @@ function drawTimelineWithMonthGranularity(sortedEvents, offset) {
 
     timelineItem = new TimelineItem(
       getEventsInYearAndMonth(events, yearNumber, monthNumber), // events in this item
-      (monthNames[monthNumber] + ' ' + yearNumber) // title of this item
+      (monthNames[monthNumber]) // title of this item
     );
+
+    if (i == 0) {
+      timelineItem.titleText = yearNumber;
+    } else if (monthNumber == 0) {
+      timelineItem.titleText = yearNumber;
+    }
+
     timelineItems.push(timelineItem);
   }
 

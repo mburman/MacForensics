@@ -43,6 +43,10 @@ table {
   position: fixed;
 }
 
+b {
+  color: #298A08;
+}
+
 h2 {
   color: #298A08;
   font-size: 20px;

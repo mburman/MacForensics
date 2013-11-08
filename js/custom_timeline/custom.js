@@ -195,7 +195,7 @@ function drawEventList(timeline, events, index, SCALE_SPACING, offset, descripti
   timeline.children[index].addChild(title);
 
   title.onMouseDown = function(event) {
-    description = '<h2>' + this.currentEvent.title + '</h2><p>' + this.currentEvent.start.toUTCString() + '</p><p>'+ this.currentEvent.description + '</p>';
+    description = '<h2>' + this.currentEvent.title + '</h2><p><b>Date: </b>' + this.currentEvent.start.toUTCString() + '</p><p>'+ this.currentEvent.description + '</p>';
     $("div#description2").html(description);
   }
 

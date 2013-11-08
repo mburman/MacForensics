@@ -20,7 +20,14 @@ def createJSONTimeline(plist_file):
     event = {}
     event['start'] = plist[i]['date']
     event['title'] = plist[i]['displayName']
-    event['description'] = "blah"
+
+    if (plist[i]['displayVersion'] == ''):
+      plist[i]['displayVersion'] = '-'
+    event['description'] = "<p><b>Version: </b>" + plist[i]['displayVersion'] + "</p>"
+    event['description'] += "<p><b>Process: </b>" + plist[i]['processName'] + "</p>"
+    event['description'] += "<p><b>Package Identifiers:</b></p>"
+    for j in range(0, len(plist[i]['packageIdentifiers'])):
+      event['description'] += "<div>" + plist[i]['packageIdentifiers'][j] +"</div>"
 
     unformatted_output['events'].append(event)
 

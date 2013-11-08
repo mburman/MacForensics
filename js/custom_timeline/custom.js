@@ -23,9 +23,10 @@ function EventDisplayData(events, eventDisplayedIndex, textField) {
   this.textField = textField;
 }
 
-function TimelineItem(events, title) {
+function TimelineItem(events, title, descriptionTitle) {
   this.events = events;
   this.title = title;
+  this.descriptionTitle = descriptionTitle;
 }
 
 // Indicates how an object was transformed.
@@ -399,7 +400,7 @@ function drawTimeline(timelineItems, offset, timelineType) {
     itemGroup.addChild(path);
     itemGroup.addChild(circle);
 
-    drawEventList(timeline, timelineItems[i].events, i, SCALE_SPACING, offset, text.content);
+    drawEventList(timeline, timelineItems[i].events, i, SCALE_SPACING, offset, timelineItems[i].descriptionTitle);
     //drawEventDots(text.events, i, SCALE_SPACING);
   }
 
@@ -448,7 +449,8 @@ function drawTimelineWithDayGranularity(sortedEvents, offset) {
     itemTitle = (i + 1); // title is just the day number
     timelineItem = new TimelineItem(
       filteredEvents,
-      itemTitle
+      itemTitle,
+      i + " " + monthNames[sortedEvents[0].start.getMonth()] + " " + sortedEvents[0].start.getFullYear() // title of the description
     );
     timelineItems.push(timelineItem);
   }
@@ -473,7 +475,8 @@ function drawTimelineWithMonthGranularity(sortedEvents, offset) {
 
     timelineItem = new TimelineItem(
       getEventsInYearAndMonth(events, yearNumber, monthNumber), // events in this item
-      (monthNames[monthNumber]) // title of this item
+      (monthNames[monthNumber]), // title of this item
+      (monthNames[monthNumber] + ' ' + yearNumber) // title of the description area
     );
 
     if (i == 0) {

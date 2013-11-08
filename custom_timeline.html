@@ -59,7 +59,7 @@
         events[0].start.toUTCString() + '</p><p>' + events[0].description + '</p>';
         $("div#description2").html(description);
 
-        var eventsInFirstMonth = getEventsInYearAndMonth(
+        var eventsInFirstMonth = getEventsInTime(
           events,
           events[0].start.getFullYear(),
           events[0].start.getMonth()

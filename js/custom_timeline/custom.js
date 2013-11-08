@@ -418,7 +418,7 @@ function drawTimelineWithDayGranularity(sortedEvents, offset) {
 
   timelineItems = new Array();
   for (var i=0; i < numDays; i++) {
-    filteredEvents = getEventsInYearAndMonthAndDate(
+    filteredEvents = getEventsInTime(
       sortedEvents,
       sortedEvents[0].start.getFullYear(),
       sortedEvents[0].start.getMonth(),
@@ -460,7 +460,7 @@ function drawTimelineWithMonthGranularity(sortedEvents, offset) {
 
     var descriptionTitle = createDescriptionTitle(yearNumber, monthNumber);
     timelineItem = new TimelineItem(
-      getEventsInYearAndMonth(events, yearNumber, monthNumber), // events in this item
+      getEventsInTime(events, yearNumber, monthNumber), // events in this item
       (monthNames[monthNumber]), // title of this item
       descriptionTitle // title of the description area
     );
@@ -495,26 +495,55 @@ function createDescriptionTitle(year, month, day, hour) {
   return title;
 }
 
-// TODO: Fix... this is a bad way of doing it.
-function getEventsInYearAndMonthAndDate(events, year, month, date) {
-  filteredEvents = Array();
-
-  events = getEventsInYearAndMonth(events, year, month);
-  for (var i = 0; i < events.length; i++) {
-    if (events[i].start.getDate() == date) {
-      filteredEvents.push(events[i]);
-    }
+function getEventsInTime(events, year, month, date, hour) {
+  var filteredEvents = Array();
+  if (year != undefined) {
+    filteredEvents = getEventsInYear(events, year);
+  }
+  if (month != undefined) {
+    filteredEvents = getEventsInMonth(filteredEvents, month);
+  }
+  if (date != undefined) {
+    filteredEvents = getEventsOnDate(filteredEvents, date);
+  }
+  if (hour != undefined) {
+    filteredEvents = getEventsOnHour(filteredEvents, hour);
   }
   return filteredEvents;
 }
 
-function getEventsInYearAndMonth(events, year, month) {
+function getEventsOnHour(events, hour) {
   var filteredEvents = Array();
   for (var i = 0; i < events.length; i++) {
-    if (events[i].start.getFullYear() == year &&
-    events[i].start.getMonth() == month) {
+    if (events[i].start.getHours() == hour)
       filteredEvents.push(events[i]);
-    }
+  }
+  return filteredEvents;
+}
+
+function getEventsOnDate(events, date) {
+  var filteredEvents = Array();
+  for (var i = 0; i < events.length; i++) {
+    if (events[i].start.getDate() == date)
+      filteredEvents.push(events[i]);
+  }
+  return filteredEvents;
+}
+
+function getEventsInMonth(events, month) {
+  var filteredEvents = Array();
+  for (var i = 0; i < events.length; i++) {
+    if (events[i].start.getMonth() == month)
+      filteredEvents.push(events[i]);
+  }
+  return filteredEvents;
+}
+
+function getEventsInYear(events, year) {
+  var filteredEvents = Array();
+  for (var i = 0; i < events.length; i++) {
+    if (events[i].start.getFullYear() == year)
+      filteredEvents.push(events[i]);
   }
   return filteredEvents;
 }

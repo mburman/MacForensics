@@ -56,7 +56,7 @@
         }
 
         description = '<h2>' + events[0].title + '</h2><p><b>Date: </b>' +
-        events[0].start.toUTCString() + '</p><p>' + events[0].description + '</p>';
+        events[0].start.toString() + '</p><p>' + events[0].description + '</p>';
         $("div#description2").html(description);
 
         var eventsInFirstMonth = getEventsInTime(
@@ -69,7 +69,7 @@
           + " " + events[0].start.getFullYear() + '</h2><table>';
         for (var i = 0; i < eventsInFirstMonth.length; i++) {
           description += '<tr><td>' +
-              eventsInFirstMonth[i].start.toUTCString() +
+              eventsInFirstMonth[i].start.toString() +
               '</td><td>' +  eventsInFirstMonth[i].title + '</td>';
         }
         description += "</table>";

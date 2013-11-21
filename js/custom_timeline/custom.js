@@ -1,21 +1,6 @@
-// Offset from the top of the canvas to the first item in the timeline.
-var START_OFFSET = 50;
-
-// Offset from the bottom of the canvas to the last item in the timeline.
-var END_OFFSET = 50;
-
-// Width of the timeline.
-// TODO: couple this with CSS
-var TIMELINE_WIDTH = 500;
-
-var EVENTS_OFFSET = 30;
-
-// Give each month n pixels.
-var SCALE_SPACING = 40;
-
 // TODO: FAR TOO MANY MAGIC NUMBERS. GET RID OF THEM!
 //
-// Holds a list of eventsm index of the event being displayed and the field in
+// Holds a list of events, index of the event being displayed and the field in
 // which it is displayed.
 function EventDisplayData(events, eventDisplayedIndex, textField) {
   this.events = events;
@@ -27,32 +12,6 @@ function TimelineItem(events, title, descriptionTitle) {
   this.events = events;
   this.title = title;
   this.descriptionTitle = descriptionTitle;
-}
-
-// Indicates how an object was transformed.
-// undoTransform is a function to undo the transform.
-function Transform(object, undoTransform, properties) {
-  this.object = object;
-  this.undoTransform = undoTransform;
-  this.properties = properties;
-}
-
-function undoTranslationTransform() {
-  this.object.position.x -= this.properties['x'];
-  this.object.position.y -= this.properties['y'];
-}
-
-function undoExistenceTransform() {
-  this.object.remove();
-}
-
-function undoSizeTransform() {
-  this.object.height -= this.properties['height'];
-  this.object.width -= this.properties['width'];
-}
-
-function undoContentTransform() {
-  this.object.content = this.properties['oldContent'];
 }
 
 // Holds all current transforms.
@@ -225,22 +184,24 @@ function drawEventList(timeline, events, index, SCALE_SPACING, offset, descripti
 var dayTransforms = Array();
 
 function expandDay(object) {
-  var previousGroup = null;
-  if (dayTransforms.length > 0) {
-    previousGroup = dayTransforms[0].object;
-  }
-
-  // Undo day transforms.
+  // Undo all day transforms.
   for (var j = 0; j < dayTransforms.length; j++) {
     dayTransforms[j].undoTransform();
   }
+
+  // See which(if any) day was expanded earlier.
+  var previousExpanded = null;
+  if (dayTransforms.length > 0) {
+    previousExpanded = dayTransforms[0].object;
+  }
+
   dayTransforms = new Array();
 
-  translationAmount = 24; // 24 hours in a day.
+  translationAmount = DAY_TRANSLATION_AMOUNT; // 24 hours in a day.
   var groupToMove = object.parent;
 
   // If the same title is being clicked, don't redraw.
-  if ((previousGroup != null) && (groupToMove.id == previousGroup.id)) {
+  if ((previousExpanded != null) && (groupToMove.id == previousExpanded.id)) {
     return;
   }
 

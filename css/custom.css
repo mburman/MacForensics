@@ -5,17 +5,6 @@ html {
   color:#000;
 }
 
-#slide {
-  margin-top: -10px;
-  width: 200px;
-  height: 110%;
-  background: #eee;
-  position: fixed;
-  color: white;
-  z-index:-1;
-  border:1px solid #a1a1a1;
-}
-
 #wrap {
   width: 100%;
   margin: 0 auto;

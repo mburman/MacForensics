@@ -17,25 +17,52 @@ function TimelineItem(events, title, descriptionTitle) {
 // Holds all current transforms.
 var currentTransforms = new Array();
 
-function addButtons(timeline, events, offset, i, title) {
-  var buttonNext = new paper.Path.RegularPolygon(new paper.Point(TIMELINE_WIDTH / 2 + 35, offset + i * SCALE_SPACING + START_OFFSET), 3, 7);
-  buttonNext.fillColor = Colors.arrow.default;
-  buttonNext.rotate(90);
+// Create a default timeline button.
+function timelineButton(X, Y, type) {
+  var button = new paper.Path.RegularPolygon(
+    new paper.Point(
+      X, // X position
+      Y // Y position
+    ),
+    3, // Number of sides of polygon
+    7
+  );
+
+  // Custom properties based on type of button.
+  if (type == 'next') {
+    button.fillColor = Colors.arrow.default;
+    button.rotate(90);
+  } else {
+    button.fillColor = Colors.arrow.unclickable;
+    button.rotate(-90);
+  }
+
+  return button;
+}
+
+function addButtons(timeline, events, offset, i, eventTitleField) {
+  var buttonNext = timelineButton(
+    BUTTON_NEXT_X,
+    offset + i * VERTICAL_SPACING + START_OFFSET,
+    'next'
+  );
   timeline.children[i].addChild(buttonNext);
 
-  var buttonPrevious = new paper.Path.RegularPolygon(new paper.Point(TIMELINE_WIDTH / 2 + 20, offset + i * SCALE_SPACING + START_OFFSET), 3, 7);
-  buttonPrevious.fillColor = Colors.arrow.unclickable;
-  buttonPrevious.rotate(-90);
-  timeline.addChild(buttonPrevious);
+  var buttonPrevious = timelineButton(
+    BUTTON_PREVIOUS_X,
+    offset + i * VERTICAL_SPACING + START_OFFSET,
+    'previous'
+  );
+
   timeline.children[i].addChild(buttonPrevious);
 
-  // Make buttons "unclickable" if there are no events to scroll through.
+  // Make next button "unclickable" if there are no events to scroll through.
   if (events.length < 2) {
     buttonNext.fillColor = Colors.arrow.unclickable;
   }
 
   // Create a blob to hold this data so we can play with it.
-  var displayData = new EventDisplayData(title.events, 0, title);
+  var displayData = new EventDisplayData(eventTitleField.events, 0, eventTitleField);
   buttonNext.data = displayData;
   buttonPrevious.data = displayData;
   buttonNext.previous = buttonPrevious;
@@ -111,7 +138,7 @@ function addButtons(timeline, events, offset, i, title) {
   }
 }
 
-function drawEventList(timeline, events, index, SCALE_SPACING, offset, descriptionTitle) {
+function drawEventList(timeline, events, index, VERTICAL_SPACING, offset, descriptionTitle) {
   if (events.length == 0) {
     return;
   }
@@ -119,7 +146,7 @@ function drawEventList(timeline, events, index, SCALE_SPACING, offset, descripti
   var title = new paper.PointText(
     new paper.Point(
       TIMELINE_WIDTH / 2 + 50,
-      offset + index * SCALE_SPACING + START_OFFSET
+      offset + index * VERTICAL_SPACING + START_OFFSET
     )
   );
 
@@ -146,7 +173,7 @@ function drawEventList(timeline, events, index, SCALE_SPACING, offset, descripti
   var more = new paper.PointText(
     new paper.Point(
       title.bounds.x + title.bounds.width + 4,
-      offset + index * SCALE_SPACING + START_OFFSET
+      offset + index * VERTICAL_SPACING + START_OFFSET
     )
   );
 
@@ -218,12 +245,12 @@ function expandDay(object) {
   while (groupToMove) {
     var properties = {
       'x':0,
-      'y':SCALE_SPACING * translationAmount
+      'y':VERTICAL_SPACING * translationAmount
     }
     transform = new Transform(groupToMove, undoTranslationTransform, properties);
     dayTransforms.push(transform);
 
-    groupToMove.position.y += SCALE_SPACING * translationAmount;
+    groupToMove.position.y += VERTICAL_SPACING * translationAmount;
     groupToMove = groupToMove.nextSibling;
   }
 
@@ -232,16 +259,16 @@ function expandDay(object) {
   while (groupToMove) {
     var properties = {
       'x':0,
-      'y':SCALE_SPACING * translationAmount
+      'y':VERTICAL_SPACING * translationAmount
     }
     transform = new Transform(groupToMove, undoTranslationTransform, properties);
     dayTransforms.push(transform);
 
-    groupToMove.position.y += SCALE_SPACING * translationAmount;
+    groupToMove.position.y += VERTICAL_SPACING * translationAmount;
     groupToMove = groupToMove.nextSibling;
   }
 
-  //nextOffset = (object.i + 1) * SCALE_SPACING;
+  //nextOffset = (object.i + 1) * VERTICAL_SPACING;
   nextOffset = object.position.y;
   group = object.expandMethod(object.events, nextOffset);
   transform = new Transform(group, undoExistenceTransform, null);
@@ -299,12 +326,12 @@ function expandMonth(object) {
   while (groupToMove) {
     var properties = {
       'x':0,
-      'y':SCALE_SPACING * translationAmount
+      'y':VERTICAL_SPACING * translationAmount
     }
     transform = new Transform(groupToMove, undoTranslationTransform, properties);
     currentTransforms.push(transform);
 
-    groupToMove.position.y += SCALE_SPACING * translationAmount;
+    groupToMove.position.y += VERTICAL_SPACING * translationAmount;
     groupToMove = groupToMove.nextSibling;
   }
 
@@ -327,7 +354,7 @@ function expandMonth(object) {
 // Draws the timeline.
 function drawTimeline(timelineItems, offset, timelineType, expandMethod, parentGroup) {
   // Length of the current timeline.
-  var timelineLength = timelineItems.length * SCALE_SPACING;
+  var timelineLength = timelineItems.length * VERTICAL_SPACING;
 
   // Setup canvas.
   var canvas = document.getElementById("myCanvas");
@@ -339,14 +366,14 @@ function drawTimeline(timelineItems, offset, timelineType, expandMethod, parentG
 
   // Draw scale names.
   for (var i=0; i < timelineItems.length; i++) {
-    var text = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 - 30,  offset + i * SCALE_SPACING + START_OFFSET));
+    var text = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 - 30,  offset + i * VERTICAL_SPACING + START_OFFSET));
 
     // Group for each timeline item.
     var itemGroup = new paper.Group();
     itemGroup.addChild(text);
     timeline.addChild(itemGroup);
 
-    var titleText = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 - 130,  offset + i * SCALE_SPACING + START_OFFSET + 5));
+    var titleText = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 - 130,  offset + i * VERTICAL_SPACING + START_OFFSET + 5));
     titleText.content = '-';
     titleText.style = {
       fillColor: '#dddddd',
@@ -371,7 +398,7 @@ function drawTimeline(timelineItems, offset, timelineType, expandMethod, parentG
       var expandSign = new paper.PointText(
         new paper.Point(
           text.bounds.x + text.bounds.width + 5,
-          offset + i * SCALE_SPACING + START_OFFSET
+          offset + i * VERTICAL_SPACING + START_OFFSET
         )
       );
       expandSign.style = {
@@ -406,7 +433,7 @@ function drawTimeline(timelineItems, offset, timelineType, expandMethod, parentG
 
 
     var path = new paper.Path();
-    var start = new paper.Point(TIMELINE_WIDTH / 2,  offset + START_OFFSET / 2 + i * SCALE_SPACING);
+    var start = new paper.Point(TIMELINE_WIDTH / 2,  offset + START_OFFSET / 2 + i * VERTICAL_SPACING);
     path.moveTo(start);
     path.lineTo(
       start.add(
@@ -417,13 +444,13 @@ function drawTimeline(timelineItems, offset, timelineType, expandMethod, parentG
     path.strokeWidth = 2;
     path.strokeCap = 'round';
 
-    var circle = new paper.Path.Circle(new paper.Point(TIMELINE_WIDTH / 2,  offset + i * SCALE_SPACING + START_OFFSET), 5);
+    var circle = new paper.Path.Circle(new paper.Point(TIMELINE_WIDTH / 2,  offset + i * VERTICAL_SPACING + START_OFFSET), 5);
     circle.fillColor = Colors.timeline.circle;
 
     itemGroup.addChild(path);
     itemGroup.addChild(circle);
 
-    drawEventList(timeline, timelineItems[i].events, i, SCALE_SPACING, offset, timelineItems[i].descriptionTitle);
+    drawEventList(timeline, timelineItems[i].events, i, VERTICAL_SPACING, offset, timelineItems[i].descriptionTitle);
   }
 
   // Adjust canvas to appropriate size.

@@ -78,7 +78,11 @@
         $("div#description").html(description);
 
         // Draw the timeline.
-        drawTimelineWithMonthGranularity(events, 0);
+        drawTimelineWithMonthGranularity(
+          events,
+          0, // y offset
+          0 // x offset
+        );
       }
 
     </script>

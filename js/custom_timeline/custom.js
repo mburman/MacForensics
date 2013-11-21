@@ -25,7 +25,7 @@ function timelineButton(X, Y, type) {
       Y // Y position
     ),
     3, // Number of sides of polygon
-    7
+    7 // Radius of polygon
   );
 
   // Custom properties based on type of button.
@@ -95,14 +95,7 @@ function addButtons(timeline, events, offset, i, eventTitleField) {
     }
     this.fillColor = Colors.arrow.default;
   }
-
-  buttonNext.onMouseLeave = function(event) {
-    if (this.data.eventDisplayedIndex == this.data.events.length-1) {
-      this.fillColor = Colors.arrow.unclickable;
-      return;
-    }
-    this.fillColor = Colors.arrow.default;
-  }
+  buttonNext.onMouseLeave = buttonNext.onMouseUp;
 
   buttonPrevious.onMouseDown = function(event) {
     if (this.data.eventDisplayedIndex == 0) {
@@ -128,14 +121,7 @@ function addButtons(timeline, events, offset, i, eventTitleField) {
     }
     this.fillColor = Colors.arrow.default;
   }
-
-  buttonPrevious.onMouseLeave = function(event) {
-    if (this.data.eventDisplayedIndex == 0) {
-      this.fillColor = Colors.arrow.unclickable;
-      return;
-    }
-    this.fillColor = Colors.arrow.default;
-  }
+  buttonPrevious.onMouseLeave = buttonPrevious.onMouseUp;
 }
 
 function drawEventList(timeline, events, index, VERTICAL_SPACING, offset, descriptionTitle) {
@@ -143,27 +129,27 @@ function drawEventList(timeline, events, index, VERTICAL_SPACING, offset, descri
     return;
   }
 
-  var title = new paper.PointText(
+  var eventTitleField = new paper.PointText(
     new paper.Point(
       TIMELINE_WIDTH / 2 + 50,
       offset + index * VERTICAL_SPACING + START_OFFSET
     )
   );
 
-  title.justification = 'left';
-  title.fillColor = 'black';
-  title.events = events;
-  title.content = events[0].title;
-  title.currentEvent = events[0];
-  timeline.children[index].addChild(title);
+  eventTitleField.justification = 'left';
+  eventTitleField.fillColor = 'black';
+  eventTitleField.events = events;
+  eventTitleField.content = events[0].title;
+  eventTitleField.currentEvent = events[0];
+  timeline.children[index].addChild(eventTitleField);
 
-  title.onMouseDown = function(event) {
-    description = '<h2>' + this.currentEvent.title + '</h2><p><b>Date: </b>' + this.currentEvent.start.toString() + '</p><p>'+ this.currentEvent.description + '</p>';
+  eventTitleField.onMouseDown = function(event) {
+    description = '<h2>' + this.currentEvent.eventTitleField + '</h2><p><b>Date: </b>' + this.currentEvent.start.toString() + '</p><p>'+ this.currentEvent.description + '</p>';
     $("div#description2").html(description);
   }
 
   // TO add or not to add...
-  addButtons(timeline, events, offset, index, title)
+  addButtons(timeline, events, offset, index, eventTitleField)
 
   // If there aren't multiple events to show.
   if (events.length == 1) {
@@ -172,7 +158,7 @@ function drawEventList(timeline, events, index, VERTICAL_SPACING, offset, descri
 
   var more = new paper.PointText(
     new paper.Point(
-      title.bounds.x + title.bounds.width + 4,
+      eventTitleField.bounds.x + eventTitleField.bounds.width + 4,
       offset + index * VERTICAL_SPACING + START_OFFSET
     )
   );
@@ -205,7 +191,7 @@ function drawEventList(timeline, events, index, VERTICAL_SPACING, offset, descri
   }
 
   timeline.children[index].addChild(more);
-  title.more = more;
+  eventTitleField.more = more;
 }
 
 var dayTransforms = Array();
@@ -270,7 +256,8 @@ function expandDay(object) {
 
   //nextOffset = (object.i + 1) * VERTICAL_SPACING;
   nextOffset = object.position.y;
-  group = object.expandMethod(object.events, nextOffset);
+  nextXOffset = 40;
+  group = object.expandMethod(object.events, nextOffset, nextXOffset);
   transform = new Transform(group, undoExistenceTransform, null);
   dayTransforms.push(transform);
 
@@ -336,7 +323,8 @@ function expandMonth(object) {
   }
 
   nextOffset = object.position.y;
-  group = object.expandMethod(object.events, nextOffset, groupClicked);
+  nextXOffset = 20;
+  group = object.expandMethod(object.events, nextOffset, groupClicked, nextXOffset);
   transform = new Transform(group, undoExistenceTransform, null);
   currentTransforms.push(transform);
 
@@ -352,7 +340,7 @@ function expandMonth(object) {
 
 
 // Draws the timeline.
-function drawTimeline(timelineItems, offset, timelineType, expandMethod, parentGroup) {
+function drawTimeline(timelineItems, offset, xOffset, timelineType, expandMethod, parentGroup) {
   // Length of the current timeline.
   var timelineLength = timelineItems.length * VERTICAL_SPACING;
 
@@ -366,13 +354,14 @@ function drawTimeline(timelineItems, offset, timelineType, expandMethod, parentG
 
   // Draw scale names.
   for (var i=0; i < timelineItems.length; i++) {
-    var text = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 - 30,  offset + i * VERTICAL_SPACING + START_OFFSET));
+    var scaleTitleField = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 - 30,  offset + i * VERTICAL_SPACING + START_OFFSET));
 
     // Group for each timeline item.
     var itemGroup = new paper.Group();
-    itemGroup.addChild(text);
+    itemGroup.addChild(scaleTitleField);
     timeline.addChild(itemGroup);
 
+    // The large scale text displayed on the LHS of the timeline.
     var titleText = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 - 130,  offset + i * VERTICAL_SPACING + START_OFFSET + 5));
     titleText.content = '-';
     titleText.style = {
@@ -388,8 +377,8 @@ function drawTimeline(timelineItems, offset, timelineType, expandMethod, parentG
 
     itemGroup.addChild(titleText);
 
-    text.content = timelineItems[i].title;
-      text.style = {
+    scaleTitleField.content = timelineItems[i].title;
+    scaleTitleField.style = {
       fillColor: '#444444',
       justification: 'right'
     };
@@ -397,7 +386,7 @@ function drawTimeline(timelineItems, offset, timelineType, expandMethod, parentG
     if (timelineItems[i].events.length > 0 && timelineType != TimelineType.hour) {
       var expandSign = new paper.PointText(
         new paper.Point(
-          text.bounds.x + text.bounds.width + 5,
+          scaleTitleField.bounds.x + scaleTitleField.bounds.width + 5,
           offset + i * VERTICAL_SPACING + START_OFFSET
         )
       );
@@ -444,7 +433,13 @@ function drawTimeline(timelineItems, offset, timelineType, expandMethod, parentG
     path.strokeWidth = 2;
     path.strokeCap = 'round';
 
-    var circle = new paper.Path.Circle(new paper.Point(TIMELINE_WIDTH / 2,  offset + i * VERTICAL_SPACING + START_OFFSET), 5);
+    var circle = new paper.Path.Circle(
+      new paper.Point(
+        TIMELINE_WIDTH / 2,
+        offset + i * VERTICAL_SPACING + START_OFFSET
+      ),
+      5 // radius
+    );
     circle.fillColor = Colors.timeline.circle;
 
     itemGroup.addChild(path);
@@ -485,7 +480,7 @@ function drawTimeline(timelineItems, offset, timelineType, expandMethod, parentG
 }
 
 // TODO
-function drawTimelineWithHourGranularity(sortedEvents, offset) {
+function drawTimelineWithHourGranularity(sortedEvents, offset, xOffset) {
   events = sortedEvents;
   numHours = 24;
   timelineItems = new Array();
@@ -514,12 +509,12 @@ function drawTimelineWithHourGranularity(sortedEvents, offset) {
     timelineItems.push(timelineItem);
   }
 
-  return drawTimeline(timelineItems, offset, TimelineType.hour);
+  return drawTimeline(timelineItems, offset, xOffset, TimelineType.hour);
 }
 
 // NOTE: For now, the events must be of the same month.
 // parentGroup - month group this belongs to.
-function drawTimelineWithDayGranularity(sortedEvents, offset, parentGroup) {
+function drawTimelineWithDayGranularity(sortedEvents, offset, parentGroup, xOffset) {
   events = sortedEvents;
   numDays = daysInMonth(
     sortedEvents[0].start.getFullYear(),
@@ -550,10 +545,10 @@ function drawTimelineWithDayGranularity(sortedEvents, offset, parentGroup) {
     timelineItems.push(timelineItem);
   }
 
-  return drawTimeline(timelineItems, offset, TimelineType.day, drawTimelineWithHourGranularity, parentGroup);
+  return drawTimeline(timelineItems, offset, xOffset, TimelineType.day, drawTimelineWithHourGranularity, parentGroup);
 }
 
-function drawTimelineWithMonthGranularity(sortedEvents, offset) {
+function drawTimelineWithMonthGranularity(sortedEvents, offset, xOffset) {
   events = sortedEvents;
   var startYear = events[0].start.getFullYear();
   var endYear = events[events.length - 1].start.getFullYear();
@@ -584,7 +579,13 @@ function drawTimelineWithMonthGranularity(sortedEvents, offset) {
     timelineItems.push(timelineItem);
   }
 
-  drawTimeline(timelineItems, 0, TimelineType.month, drawTimelineWithDayGranularity);
+  drawTimeline(
+    timelineItems,
+    offset, // offset is 0... since this is the default version.
+    xOffset,
+    TimelineType.month,
+    drawTimelineWithDayGranularity
+  );
 }
 
 // Creates a title for the event description box.

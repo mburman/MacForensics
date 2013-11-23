@@ -362,7 +362,7 @@ function drawTimeline(timelineItems, offset, xOffset, timelineType, expandMethod
     timeline.addChild(itemGroup);
 
     // The large scale text displayed on the LHS of the timeline.
-    var titleText = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 - 130,  offset + i * VERTICAL_SPACING + START_OFFSET + 5));
+    var titleText = new paper.PointText(new paper.Point(TIMELINE_WIDTH / 2 - 130 + xOffset,  offset + i * VERTICAL_SPACING + START_OFFSET + 5));
     titleText.content = '-';
     titleText.style = {
       fillColor: '#dddddd',

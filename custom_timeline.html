@@ -1,6 +1,6 @@
 <html>
   <head>
-    <link href="css/jquery-ui-1.10.3.custom/blitzer/jquery-ui-1.10.3.custom.css" rel="stylesheet">
+    <link href="css/jquery-ui-1.10.3.custom/smoothness/jquery-ui-1.10.3.custom.css" rel="stylesheet">
     <link href="css/custom.css" rel="stylesheet">
 	  <script src="js/jquery-ui-1.10.3.custom/jquery-1.9.1.js"></script>
 	  <script src="js/jquery-ui-1.10.3.custom/jquery-ui-1.10.3.custom.js"></script>
@@ -13,7 +13,40 @@
     <script type="text/paperscript" canvas="myCanvas">
       $(document).ready(function () {
         parseJSON("./gen/json_file_custom.json");
+
+        $("#installedsoftware").click(function() {
+          ShowInstalledSoftware();
+        });
+
+        $( "#selector" )
+        .button()
+        .click(function() {
+        })
+        .next()
+        .button({
+          text: false,
+          icons: {
+            primary: "ui-icon-triangle-1-s"
+          }
+        })
+        .click(function() {
+          var menu = $( this ).parent().next().show().position({
+            my: "left top",
+            at: "left bottom",
+            of: this
+          });
+          $( document ).one( "click", function() {
+            menu.hide();
+          });
+          return false;
+        })
+        .parent()
+        .buttonset()
+        .next()
+        .hide()
+        .menu()
       });
+
 
       // A timeline event.
       function Event(title, description, start) {
@@ -85,12 +118,25 @@
         );
       }
 
+      function ShowInstalledSoftware() {
+        $("#selector").button('option', 'label', 'Installed Software');
+      }
     </script>
   </head>
 
   <body>
     <div id="wrap">
       <div id="slide"></div>
+
+      <div id="options">
+      <div>
+        <button id="selector">Installed Software</button>
+        <button id="selectoroptions">Select an action</button>
+      </div>
+      <ul>
+        <li><a id="installedsoftware" href="#">Installed Software</a></li>
+      </ul>
+    </div>
       <div id="description"></div>
       <div id="description2"></div>
       <canvas id="myCanvas" />

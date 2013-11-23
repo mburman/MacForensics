@@ -11,8 +11,29 @@ now.
 # Arcane crap to json encode datetimes.
 dthandler = lambda obj: obj.isoformat() if isinstance(obj, datetime.datetime) or isinstance(obj, datetime.date) else None
 
-def createJSONTimeline(plist_file):
+def parsePlistFile(plist_file):
   plist = plistlib.readPlist(plist_file)
+  if "installhistory" in plist_file.lower():
+    parseInstallHistoryPlist(plist)
+  else:
+    parseNetworkSettingsPlist(plist)
+
+def parseNetworkSettingsPlist(plist):
+  unformatted_output = {'events':[]}
+
+  plist = plist['Signatures']
+  # Create an event for each item.
+  for i in range(0, len(plist)):
+    event = {}
+    event['start'] = plist[i]['Timestamp']
+    event['title'] = plist[i]['Identifier']
+
+    unformatted_output['events'].append(event)
+
+  print json.dumps(unformatted_output, default=dthandler)
+
+
+def parseInstallHistoryPlist(plist):
   unformatted_output = {'events':[]}
 
   # Create an event for each item.
@@ -38,4 +59,4 @@ if __name__ == '__main__':
     print "usage: ./plist_parser_custom.py plistfile"
     sys.exit()
 
-  createJSONTimeline(sys.argv[1])
+  parsePlistFile(sys.argv[1])

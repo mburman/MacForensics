@@ -15,7 +15,11 @@
 
       $(document).ready(function () {
         $("#installedsoftware").click(function() {
-          ShowInstalledSoftware(currentTimezoneType);
+          ShowNewTimeline("Installed Software", currentTimezoneType);
+        });
+
+        $("#networkhistory").click(function() {
+          ShowNewTimeline("Network History", currentTimezoneType);
         });
 
         $(function() {
@@ -110,6 +114,12 @@
           return;
         }
 
+        // TODO: REMOVE THIS TEMP FIX - ERROR IN PLIST FILE.
+        if (events[0].start.getFullYear() == 2000) {
+          // Removes the wrong date from the events array.
+          events.splice(0, 1);
+        }
+
         descriptionDate = events[0].start.toString();
         currentTimezoneType = "DEFAULT";
         if (timezoneType == "UTC") {
@@ -153,18 +163,33 @@
         );
       }
 
-      function ShowInstalledSoftware(timezoneType) {
+      function ShowNewTimeline(timelineName, timezoneType) {
         $("body").addClass("loading");
-        $("#selector").button('option', 'label', 'Installed Software');
-        parseJSON("./gen/json_file_custom.json", timezoneType);
+        $("#selector").button('option', 'label', timelineName);
+
+        if (timelineName == 'Installed Software') {
+          ShowInstalledSoftware(timezoneType);
+        } else if (timelineName == 'Network History') {
+          ShowNetworkHistory(timezoneType);
+        }
 
         // Wait to ensure the timeline is visible.
         setTimeout(
-          function() {
-            $("body").removeClass("loading");
-          },
-          500);
-        }
+        function() {
+          $("body").removeClass("loading");
+        },
+        500
+        );
+      }
+
+      function ShowInstalledSoftware(timezoneType) {
+        parseJSON("./gen/installedsoftware.json", timezoneType);
+      }
+
+      function ShowNetworkHistory(timezoneType) {
+        parseJSON("./gen/network.json", timezoneType);
+      }
+
     </script>
   </head>
 
@@ -186,6 +211,7 @@
       </span>
       <ul>
         <li><a id="installedsoftware" href="#">Installed Software</a></li>
+        <li><a id="networkhistory" href="#">Network History</a></li>
       </ul>
     </div>
       <div id="description"></div>

@@ -16,9 +16,9 @@ table {
 }
 
 #options {
-  width: 300px;
+  width: 500px;
   top: 20px;
-  right: -40px;
+  right: -60px;
   position: fixed;
   z-index: 1;
   font-size: 14px;

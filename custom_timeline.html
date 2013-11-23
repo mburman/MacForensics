@@ -11,9 +11,15 @@
     <script type="text/javascript" src="js/custom_timeline/constants.js"></script>
     <script type="text/javascript" src="js/custom_timeline/transforms.js"></script>
     <script type="text/paperscript" canvas="myCanvas">
+      currentTimezoneType = "DEFAULT";
+
       $(document).ready(function () {
         $("#installedsoftware").click(function() {
-          ShowInstalledSoftware();
+          ShowInstalledSoftware(currentTimezoneType);
+        });
+
+        $(function() {
+          $( "#radio" ).buttonset();
         });
 
         // Arcane crap to get the timeline selector working.
@@ -45,9 +51,20 @@
         .hide()
         .menu();
 
+        $('input:radio[name="radio"]').change(
+          function() {
+            if ($(this).val() == 'default') {
+              ShowInstalledSoftware('DEFAULT');
+            }
+            else {
+              ShowInstalledSoftware('UTC');
+            }
+        });
+
+
 
         // By default, show installed software.
-        ShowInstalledSoftware();
+        ShowInstalledSoftware("DEFAULT");
       });
 
 
@@ -59,7 +76,7 @@
       }
 
       // Parse a JSON file of events.
-      function parseJSON(json_file) {
+      function parseJSON(json_file, timezoneType) {
         var events = new Array();
 
         // This is asynchonous.
@@ -71,12 +88,12 @@
         });
 
         jqxhr.always(function() {
-          return drawTimeline(events);
+          return drawTimeline(events, timezoneType);
         });
       }
 
       // Draw the timeline.
-      function drawTimeline(events) {
+      function drawTimeline(events, timezoneType) {
         console.log("Number of events: " + events.length);
 
         // Sort in ascending order.
@@ -93,8 +110,16 @@
           return;
         }
 
+        descriptionDate = events[0].start.toString();
+        currentTimezoneType = "DEFAULT";
+        if (timezoneType == "UTC") {
+        console.log("UTC");
+          descriptionDate = events[0].start.toUTCString();
+          currentTimezoneType = "UTC";
+        }
+
         description = '<h2>' + events[0].title + '</h2><p><b>Date: </b>' +
-        events[0].start.toString() + '</p><p>' + events[0].description + '</p>';
+        descriptionDate + '</p><p>' + events[0].description + '</p>';
         $("div#description2").html(description);
 
         var eventsInFirstMonth = getEventsInTime(
@@ -106,8 +131,15 @@
         description = '<h2>Events on ' + monthNames[events[0].start.getMonth()]
           + " " + events[0].start.getFullYear() + '</h2><table>';
         for (var i = 0; i < eventsInFirstMonth.length; i++) {
-          description += '<tr><td>' +
-              eventsInFirstMonth[i].start.toString() +
+
+          descriptionDate = eventsInFirstMonth[i].start.toString();
+          currentTimezoneType = "DEFAULT";
+          if (timezoneType == "UTC") {
+            descriptionDate = eventsInFirstMonth[i].start.toUTCString();
+            currentTimezoneType = "UTC";
+          }
+
+          description += '<tr><td>' + descriptionDate +
               '</td><td>' +  eventsInFirstMonth[i].title + '</td>';
         }
         description += "</table>";
@@ -121,10 +153,10 @@
         );
       }
 
-      function ShowInstalledSoftware() {
+      function ShowInstalledSoftware(timezoneType) {
         $("body").addClass("loading");
         $("#selector").button('option', 'label', 'Installed Software');
-        parseJSON("./gen/json_file_custom.json");
+        parseJSON("./gen/json_file_custom.json", timezoneType);
 
         // Wait to ensure the timeline is visible.
         setTimeout(
@@ -141,10 +173,17 @@
       <div id="slide"></div>
 
       <div id="options">
-      <div>
+        <span id="radio">
+          <input type="radio" id="radio1" name="radio" value="default" checked="checked"/>
+          <label for="radio1">Default</label>
+          <input type="radio" id="radio2" name="radio" value="gmt"/>
+          <label for="radio2">UTC</label>
+        </span>
+
+      <span>
         <button id="selector">Installed Software</button>
         <button id="selectoroptions">Select an action</button>
-      </div>
+      </span>
       <ul>
         <li><a id="installedsoftware" href="#">Installed Software</a></li>
       </ul>

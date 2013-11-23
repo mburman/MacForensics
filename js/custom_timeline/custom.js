@@ -482,10 +482,9 @@ function drawTimeline(timelineItems, offset, xOffset, timelineType, expandMethod
     paper.view.viewSize.height = canvas.height;
   }
 
+  paper.view.draw();
   return timeline;
 
-  // TODO: Figure out what this does.
-//  paper.view.draw();
 }
 
 // TODO

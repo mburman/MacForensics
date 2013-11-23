@@ -12,12 +12,11 @@
     <script type="text/javascript" src="js/custom_timeline/transforms.js"></script>
     <script type="text/paperscript" canvas="myCanvas">
       $(document).ready(function () {
-        parseJSON("./gen/json_file_custom.json");
-
         $("#installedsoftware").click(function() {
           ShowInstalledSoftware();
         });
 
+        // Arcane crap to get the timeline selector working.
         $( "#selector" )
         .button()
         .click(function() {
@@ -44,7 +43,11 @@
         .buttonset()
         .next()
         .hide()
-        .menu()
+        .menu();
+
+
+        // By default, show installed software.
+        ShowInstalledSoftware();
       });
 
 
@@ -119,8 +122,17 @@
       }
 
       function ShowInstalledSoftware() {
+        $("body").addClass("loading");
         $("#selector").button('option', 'label', 'Installed Software');
-      }
+        parseJSON("./gen/json_file_custom.json");
+
+        // Wait to ensure the timeline is visible.
+        setTimeout(
+          function() {
+            $("body").removeClass("loading");
+          },
+          500);
+        }
     </script>
   </head>
 
@@ -141,5 +153,7 @@
       <div id="description2"></div>
       <canvas id="myCanvas" />
     </div>
+
+    <div class="modal"></div>
   </body>
 </html>

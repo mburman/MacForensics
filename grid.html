@@ -944,8 +944,28 @@ function loadData(json_file) {
     });
 }
 
+//from stackoverflow.com/questions/3788125/jquery-querystring
+function getParameterByName( name )
+{
+  name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+  var regexS = "[\\?&]"+name+"=([^&#]*)";
+  var regex = new RegExp( regexS );
+  var results = regex.exec( window.location.href );
+  if( results == null )
+    return "";
+  else
+    return decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
 $(function() {
-	loadData("./gen/installedsoftware_grid.json");
+	var type = getParameterByName("type");
+	
+	if(type === "ntfs")
+		loadData("./gen/ntfs_files_grid.json");
+	else if(type === "software_plist")
+		loadData("./gen/installedsoftware_grid.json");
+	else
+		loadData("./gen/installedsoftware_grid.json");
 });
   
 

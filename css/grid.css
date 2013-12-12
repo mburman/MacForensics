@@ -78,7 +78,7 @@ li {
   padding: 4px;
   width: 95%;
   margin-top: 20px;
-  height: 200px;
+  min-height: 250px;
   margin-left: auto;
   margin-right: auto;
 }

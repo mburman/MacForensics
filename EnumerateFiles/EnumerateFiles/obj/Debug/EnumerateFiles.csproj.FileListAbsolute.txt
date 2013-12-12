@@ -1,0 +1,11 @@
+c:\users\nick\documents\visual studio 2012\Projects\EnumerateFiles\EnumerateFiles\bin\Debug\EnumerateFiles.exe.config
+c:\users\nick\documents\visual studio 2012\Projects\EnumerateFiles\EnumerateFiles\bin\Debug\EnumerateFiles.exe
+c:\users\nick\documents\visual studio 2012\Projects\EnumerateFiles\EnumerateFiles\bin\Debug\EnumerateFiles.pdb
+c:\users\nick\documents\visual studio 2012\Projects\EnumerateFiles\EnumerateFiles\bin\Debug\Newtonsoft.Json.dll
+c:\users\nick\documents\visual studio 2012\Projects\EnumerateFiles\EnumerateFiles\bin\Debug\Newtonsoft.Json.pdb
+c:\users\nick\documents\visual studio 2012\Projects\EnumerateFiles\EnumerateFiles\bin\Debug\Newtonsoft.Json.xml
+c:\users\nick\documents\visual studio 2012\Projects\EnumerateFiles\EnumerateFiles\obj\Debug\EnumerateFiles.csprojResolveAssemblyReference.cache
+c:\users\nick\documents\visual studio 2012\Projects\EnumerateFiles\EnumerateFiles\obj\Debug\EnumerateFiles.exe
+c:\users\nick\documents\visual studio 2012\Projects\EnumerateFiles\EnumerateFiles\obj\Debug\EnumerateFiles.pdb
+c:\users\nick\documents\visual studio 2012\Projects\EnumerateFiles\EnumerateFiles\obj\Debug\Decl\EnumerateFiles.exe
+c:\users\nick\documents\visual studio 2012\Projects\EnumerateFiles\EnumerateFiles\obj\Debug\Decl\EnumerateFiles.pdb

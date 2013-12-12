@@ -36,7 +36,7 @@
     }
        
     #sortable1div, #sortable2div { list-style-type: none; margin: 0; padding: 0 0 0.1em; margin-right: 10px; min-height: 10px; min-width: 120px; }
-	#sortable1, #sortable2 { list-style-type: none; min-height: 10px; min-width: 135px; }
+	#sortable1, #sortable2 { list-style-type: none; min-height: 20px; min-width: 135px; }
   	#sortable1 li, #sortable2 li { margin: 0 5px 5px 5px; padding: 1px; font-size: 1.2em; width: 120px; float:left; }
   </style>
 </head>
@@ -426,10 +426,16 @@ function filter(item) {
 	          return false;
 	        }
         }
+        else if(typeof item[c.field] === 'boolean' && columnFilters[columnId] !== "") {
+        	var patt = new RegExp(RegExp.escape(columnFilters[columnId]),"i");
+	        if (item[c.field].toString().search(patt) < 0) {
+	          return false;
+	        }
+        }
         else if(typeof item[c.field] === 'number' && columnFilters[columnId] !== "") {
         	if(item[c.field] !== parseFloat(columnFilters[columnId]))
         		return false;
-        }       
+        }        
         else if(Object.prototype.toString.call(item[c.field]) === '[object Date]') {
         	var filterObject = columnFilters[columnId];
         	
@@ -938,8 +944,28 @@ function loadData(json_file) {
     });
 }
 
+//from stackoverflow.com/questions/3788125/jquery-querystring
+function getParameterByName( name )
+{
+  name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+  var regexS = "[\\?&]"+name+"=([^&#]*)";
+  var regex = new RegExp( regexS );
+  var results = regex.exec( window.location.href );
+  if( results == null )
+    return "";
+  else
+    return decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
 $(function() {
-	loadData("./gen/installedsoftware_grid.json");
+	var type = getParameterByName("type");
+	
+	if(type === "ntfs")
+		loadData("./gen/ntfs_files_grid.json");
+	else if(type === "software_plist")
+		loadData("./gen/installedsoftware_grid.json");
+	else
+		loadData("./gen/installedsoftware_grid.json");
 });
   
 

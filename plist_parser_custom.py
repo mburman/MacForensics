@@ -1,12 +1,15 @@
 import datetime
 import json
 import plistlib
+import re
 import sys
+import urllib2
 
 '''
 NOTE: This is tuned to parse only //Library/Receipts/InstallHistory.plist for
 now.
 '''
+# /Library/Preferences/com.apple.iPod.plist
 
 # Arcane crap to json encode datetimes.
 dthandler = lambda obj: obj.isoformat() if isinstance(obj, datetime.datetime) or isinstance(obj, datetime.date) else None
@@ -26,8 +29,39 @@ def parseNetworkSettingsPlist(plist):
   for i in range(0, len(plist)):
     event = {}
     event['start'] = plist[i]['Timestamp']
-    event['title'] = plist[i]['Identifier']
 
+    if 'DNS' in plist[i]['Services'][0]:
+      ip = plist[i]['Services'][0]['DNS']['ServerAddresses'][0]
+
+      downloaded_data  = urllib2.urlopen(
+          'http://api.hostip.info/get_html.php?ip=' +
+          ip +
+          '&position=true'
+      )
+
+      data = downloaded_data.read()
+      country = re.search('Country: (.*?)\n', data).group(1)
+      if "Private" in country:
+        continue
+
+      if "Unknown" in country:
+        continue
+
+      if not country:
+        continue
+
+      city = re.search('City: (.*?)\n', data).group(1)
+      latitude = re.search('Latitude: (.*?)\n', data).group(1)
+      longitude = re.search('Longitude: (.*?)\n', data).group(1)
+
+      event['title'] = city;
+
+      event['description'] = "<p><b>Country: </b>" + country + "</p>"
+      event['description'] += "<p><b>City: </b>" + city + "</p>"
+      event['description'] += "<p><b>Latitude: </b>" + latitude + "</p>"
+      event['description'] += "<p><b>Longitude: </b>" + longitude + "</p>"
+    else:
+      continue
     unformatted_output['events'].append(event)
 
   print json.dumps(unformatted_output, default=dthandler)

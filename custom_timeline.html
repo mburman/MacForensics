@@ -19,7 +19,7 @@
         });
 
         $("#networkhistory").click(function() {
-          ShowNewTimeline("Network History", currentTimezoneType);
+          ShowNewTimeline("Locations", currentTimezoneType);
         });
 
         $(function() {
@@ -169,7 +169,7 @@
 
         if (timelineName == 'Installed Software') {
           ShowInstalledSoftware(timezoneType);
-        } else if (timelineName == 'Network History') {
+        } else if (timelineName == 'Locations') {
           ShowNetworkHistory(timezoneType);
         }
 
@@ -211,7 +211,7 @@
       </span>
       <ul>
         <li><a id="installedsoftware" href="#">Installed Software</a></li>
-        <li><a id="networkhistory" href="#">Network History</a></li>
+        <li><a id="networkhistory" href="#">Locations</a></li>
       </ul>
     </div>
       <div id="description"></div>
